@@ -1,141 +1,236 @@
-let selectedSlotIndex = null; // Track which slot is selected
-const selectedItems = [null, null, null, null, null, null]; // Store selected items for each slot
+// modal.js
+// Item slots and the item picker dialog.
 
-// Event listeners for item slots to open the modal
-document.querySelectorAll(".item").forEach((slot, index) => {
-  slot.addEventListener("click", () => {
-    selectedSlotIndex = index; // Track which slot is selected
-    openModal();
-  });
-});
+const SLOT_COUNT = 6;
+let selectedSlotIndex = null; // Track which slot the picker is choosing for
+const selectedItems = Array(SLOT_COUNT).fill(null); // Store selected items for each slot
+let allItems = [];
+let activeFilter = "all";
 
-// Function to open the modal
-function openModal() {
-  const modal = document.getElementById("itemModal");
-  modal.showModal();
+const modal = document.getElementById("itemModal");
+const itemGrid = document.getElementById("itemGrid");
+const searchInput = document.getElementById("itemSearch");
+const tooltip = document.getElementById("itemTooltip");
+
+const ITEM_FILTERS = {
+  all: () => true,
+  ad: (item) => item.ad,
+  as: (item) => item.as,
+  crit: (item) => item.critChance || item.critDamage,
+  lethality: (item) => item.lethality,
+  pen: (item) => item.pen || item.armorShred,
+  components: (item) => item.component,
+};
+
+const STAT_DISPLAY = [
+  { key: "ad", icon: "img/AD.png", label: "Attack Damage", suffix: "" },
+  { key: "as", icon: "img/attack-speed.webp", label: "Attack Speed", suffix: "%" },
+  { key: "critChance", icon: "img/Critical_strike_icon.webp", label: "Crit Chance", suffix: "%" },
+  { key: "critDamage", icon: "img/crit-damage.png", label: "Crit Damage", suffix: "%" },
+  { key: "lethality", icon: "img/armor_pen.png", label: "Lethality", suffix: "" },
+  { key: "pen", icon: "img/armor_pen.png", label: "Armor Penetration", suffix: "%" },
+];
+
+function statLines(item) {
+  const lines = STAT_DISPLAY.filter((stat) => item[stat.key]).map(
+    (stat) => `<li><img src="${stat.icon}" alt=""> ${item[stat.key]}${stat.suffix} ${stat.label}</li>`
+  );
+  if (item.armorShred) {
+    const { perStack, maxStacks } = item.armorShred;
+    lines.push(`<li><img src="img/armor_pen.png" alt=""> ${perStack}% armor shred per hit (up to ${maxStacks})</li>`);
+  }
+  return lines.join("");
 }
 
-// Function to close the modal
+// Last Whisper and the items built from it share a unique passive
+function getBlockReason(item) {
+  if (!item.lastWhisper) return null;
+  const conflict = selectedItems.find((selected, index) => index !== selectedSlotIndex && selected?.lastWhisper);
+  return conflict ? `Only one Last Whisper item allowed (you have ${conflict.name}).` : null;
+}
+
+// ---------- Slots ----------
+
+function renderSlots() {
+  const container = document.getElementById("items");
+  container.innerHTML = "";
+
+  selectedItems.forEach((item, index) => {
+    const wrap = document.createElement("div");
+    wrap.className = "item-slot-wrap";
+
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = item ? "item-slot filled" : "item-slot";
+    slot.setAttribute("aria-label", item ? `Slot ${index + 1}: ${item.name}. Change item` : `Slot ${index + 1}: empty. Add item`);
+    if (item) {
+      slot.title = item.name;
+      slot.innerHTML = `<img src="${item.icon}" alt="">`;
+    } else {
+      slot.innerHTML = `<span class="slot-plus" aria-hidden="true">+</span>`;
+    }
+    slot.addEventListener("click", () => openModal(index));
+    wrap.appendChild(slot);
+
+    if (item) {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "slot-remove";
+      remove.setAttribute("aria-label", `Remove ${item.name}`);
+      remove.textContent = "\u00d7";
+      remove.addEventListener("click", () => {
+        setSlot(index, null);
+        focusSlot(index);
+      });
+      wrap.appendChild(remove);
+    }
+
+    container.appendChild(wrap);
+  });
+}
+
+function focusSlot(index) {
+  document.querySelectorAll(".item-slot")[index]?.focus();
+}
+
+function setSlot(index, item) {
+  selectedItems[index] = item;
+  renderSlots();
+  updateStats();
+}
+
+// ---------- Picker ----------
+
+function openModal(index) {
+  selectedSlotIndex = index;
+  const current = selectedItems[index];
+  document.getElementById("pickerTitle").textContent = current ? `Replace ${current.name}` : `Choose item for slot ${index + 1}`;
+  document.getElementById("removeItem").hidden = !current;
+  renderItemGrid();
+  modal.showModal();
+  searchInput.focus();
+}
+
 function closeModal() {
-  const modal = document.getElementById("itemModal");
   modal.close();
 }
 
-// Function to render items in the modal
-function renderItems(items) {
-  const modalBody = document.querySelector("#itemModal .modal-body");
-  modalBody.innerHTML = ""; // Clear any existing items
+function renderItemGrid() {
+  const query = searchInput.value.trim().toLowerCase();
+  const matchesFilter = ITEM_FILTERS[activeFilter];
+  const visible = allItems.filter((item) => matchesFilter(item) && item.name.toLowerCase().includes(query));
 
-  // Add the "Remove Item" option at the top with the not-allowed icon
-  const removeItemElement = document.createElement("div");
-  removeItemElement.classList.add("item-row");
-  removeItemElement.innerHTML = `
-    <div class="item-image">
-      <img src="img/not-allowed.png" alt="Remove Item" />
-    </div>
-    <div class="item-info">
-      <h4>Remove Item</h4>
-    </div>
-  `;
-  removeItemElement.addEventListener("click", () => {
-    removeItem(); // Call the function to remove the selected item
-  });
-  modalBody.appendChild(removeItemElement);
+  itemGrid.innerHTML = "";
+  if (!visible.length) {
+    itemGrid.innerHTML = `<p class="grid-empty">No items match.</p>`;
+    return;
+  }
 
-  // Render the other items in the list
-  items.forEach((item) => {
-    const itemElement = document.createElement("div");
-    itemElement.classList.add("item-row");
+  const current = selectedItems[selectedSlotIndex];
+  for (const item of visible) {
+    const reason = getBlockReason(item);
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = item === current ? "item-tile current" : "item-tile";
+    tile.setAttribute("aria-label", `${item.name}, ${item.gold} gold${reason ? `. ${reason}` : ""}`);
+    if (reason) tile.setAttribute("aria-disabled", "true");
+    tile.innerHTML = `<img src="${item.icon}" alt="" loading="lazy"><span class="tile-gold">${item.gold}</span>`;
 
-    itemElement.innerHTML = `
-      <div class="item-image">
-        <img src="${item.icon}" alt="${item.name}">
-      </div>
-      <div class="item-info">
-        <h4>${item.name} <span class="item-gold">${item.gold}g</span></h4>
-        ${item.ad ? `<span class="item-stats"><img src="img/AD.png" alt="AD"> ${item.ad}</span>` : ""}
-        ${item.as ? `<span class="item-stats"><img src="img/attack-speed.webp" alt="AS"> ${item.as}%</span>` : ""}
-        ${item.critChance ? `<span class="item-stats"><img src="img/Critical_strike_icon.webp" alt="Crit Chance"> ${item.critChance}%</span>` : ""}
-        ${item.critDamage ? `<span class="item-stats"><img src="img/crit-damage.png" alt="Crit Damage"> ${item.critDamage}%</span>` : ""}
-        ${item.lethality ? `<span class="item-stats"><img src="img/armor_pen.png" alt="Lethality"> ${item.lethality}</span>` : ""}
-        ${item.pen ? `<span class="item-stats"><img src="img/armor_pen.png" alt="%PEN"> ${item.pen}%</span>` : ""}
-        ${item.armorShred ? `<span class="item-stats"><img src="img/armor_pen.png" alt="Armor Shred"> ${item.armorShred.perStack}% x${item.armorShred.maxStacks} shred</span>` : ""}
-      </div>
-    `;
-
-    modalBody.appendChild(itemElement);
-
-    // Event listener to select item when clicked
-    itemElement.addEventListener("click", () => {
-      selectItem(item);
+    tile.addEventListener("click", () => {
+      if (!reason) selectItem(item);
     });
-  });
+    tile.addEventListener("pointerenter", (e) => {
+      if (e.pointerType === "mouse") showTooltip(item, tile, reason);
+    });
+    tile.addEventListener("pointerleave", hideTooltip);
+    tile.addEventListener("focus", () => showTooltip(item, tile, reason));
+    tile.addEventListener("blur", hideTooltip);
+
+    itemGrid.appendChild(tile);
+  }
 }
 
 function selectItem(item) {
-  if (selectedSlotIndex !== null) {
-    // Last Whisper and the items built from it share a unique passive
-    const hasOtherLastWhisper = selectedItems.some(
-      (selectedItem, index) => index !== selectedSlotIndex && selectedItem?.lastWhisper
-    );
-    if (item.lastWhisper && hasOtherLastWhisper) {
-      alert("You can only have one Last Whisper item (Last Whisper, Lord Dominik's Regards, Mortal Reminder, Serylda's Grudge).");
-      return; // Prevent selection
-    }
-
-    // Set the selected item in the selected slot
-    selectedItems[selectedSlotIndex] = item;
-
-    // Update the slot with the item's image
-    const itemSlot = document.querySelectorAll(".item")[selectedSlotIndex];
-    itemSlot.innerHTML = `<img src="${item.icon}" alt="${item.name}" title="${item.name}">`;
-
-    closeModal(); // Close the modal after selecting an item
-
-    // Update the stats to include item bonuses
-    updateStats();
-  }
+  if (selectedSlotIndex === null) return;
+  setSlot(selectedSlotIndex, item);
+  closeModal();
 }
 
-// Function to remove the selected item
-function removeItem() {
-  if (selectedSlotIndex !== null) {
-    // Remove the item by setting it to null
-    selectedItems[selectedSlotIndex] = null;
+function showTooltip(item, anchor, reason) {
+  tooltip.innerHTML = `
+    <div class="tooltip-head">
+      <img src="${item.icon}" alt="">
+      <div><strong>${item.name}</strong><span class="tooltip-gold">${item.gold} gold</span></div>
+    </div>
+    <ul class="tooltip-stats">${statLines(item)}</ul>
+    ${reason ? `<p class="tooltip-warning">${reason}</p>` : ""}
+  `;
+  tooltip.hidden = false;
 
-    // Clear the corresponding slot (set the slot to empty)
-    const itemSlot = document.querySelectorAll(".item")[selectedSlotIndex];
-    itemSlot.innerHTML = ""; // Empty the slot
+  const margin = 8;
+  const anchorRect = anchor.getBoundingClientRect();
+  const tipRect = tooltip.getBoundingClientRect();
+  const left = clamp(
+    anchorRect.left + anchorRect.width / 2 - tipRect.width / 2,
+    margin,
+    window.innerWidth - tipRect.width - margin
+  );
+  let top = anchorRect.top - tipRect.height - margin;
+  if (top < margin) top = anchorRect.bottom + margin;
 
-    closeModal(); // Close the modal after removing the item
-
-    // Update the stats to reflect the removal
-    updateStats();
-  }
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
 }
 
-// Initialize modal and set up event listeners
+function hideTooltip() {
+  tooltip.hidden = true;
+}
+
+// Initialize slots and picker
 async function initializeModal() {
+  renderSlots();
+
+  searchInput.addEventListener("input", renderItemGrid);
+
+  document.querySelectorAll("#itemFilters [data-filter]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      activeFilter = chip.dataset.filter;
+      document.querySelectorAll("#itemFilters [data-filter]").forEach((other) => {
+        other.setAttribute("aria-pressed", String(other === chip));
+      });
+      renderItemGrid();
+    });
+  });
+
+  document.getElementById("closePicker").addEventListener("click", closeModal);
+  document.getElementById("removeItem").addEventListener("click", () => {
+    setSlot(selectedSlotIndex, null);
+    closeModal();
+  });
+
+  // Close when clicking the backdrop
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  modal.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  modal.addEventListener("close", () => {
+    hideTooltip();
+    focusSlot(selectedSlotIndex);
+  });
+
+  itemGrid.addEventListener("scroll", hideTooltip);
+
   try {
-    const { items } = await gameData;
-    renderItems(items); // Render items in modal initially
-
-    // Set up search functionality
-    const searchInput = document.getElementById("itemSearch");
-    searchInput.addEventListener("input", () => {
-      const query = searchInput.value.toLowerCase();
-      const filteredItems = items.filter((item) => item.name.toLowerCase().includes(query));
-      renderItems(filteredItems); // Re-render items based on search query
-    });
-
-    // Close modal when clicking outside
-    document.getElementById("itemModal").addEventListener("click", (e) => {
-      if (e.target === document.getElementById("itemModal")) {
-        closeModal();
-      }
-    });
+    ({ items: allItems } = await gameData);
   } catch (error) {
-    console.error("Error initializing modal:", error);
+    console.error("Error loading items:", error);
   }
 }
 

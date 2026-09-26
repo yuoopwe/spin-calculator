@@ -69,10 +69,18 @@ function calculateJudgment(garen, options) {
   const nearestMultiplier = 1 + e.nearestEnemyBonus;
 
   const spinDamage = [];
+  const spinDetails = [];
   for (let spin = 1; spin <= spins; spin++) {
     const reductions = getArmorReductions(garen, spin, options);
     const finalArmor = calculateEffectiveArmor(armor, reductions, pen, lethality);
-    spinDamage.push(rawDamagePerSpin * calculateDamageMultiplier(finalArmor));
+    const damage = rawDamagePerSpin * calculateDamageMultiplier(finalArmor);
+    spinDamage.push(damage);
+    spinDetails.push({
+      spin,
+      damage,
+      armor: finalArmor,
+      judgmentShred: options.targetIsChampion && armor > 0 && spin > e.hitsToShred,
+    });
   }
 
   const firstSpin = spinDamage[0];
@@ -81,6 +89,8 @@ function calculateJudgment(garen, options) {
 
   return {
     critMultiplier,
+    spinDamage,
+    spinDetails,
     firstSpin,
     firstCritSpin: firstSpin * critMultiplier,
     lastSpin,

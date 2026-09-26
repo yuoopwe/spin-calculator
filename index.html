@@ -5,112 +5,201 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Garen Spin Calculator</title>
+    <meta name="description" content="Calculate the damage of Garen's Judgment (E) with current League of Legends items and stats." />
     <link rel="shortcut icon" href="img/Garen_Judgment.png" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-
-    <!-- THIS IS WHERE THE USER SELECTS THE STATS OF GAREN -->
-    <div class="main">
-        <h1>. Select <img id="garen" src="img/48px-Garen_OriginalCircle.webp" /> Champion Level</h1>
-        <input type="number" id="championLevel" min="1" max="18" value="1" />
-        <h1>. Select <img id="eability" src="img/Garen_Judgment.png" /> Ability Rank </h1>
-        <input type="number" min="1" max="5" value="1" id="eRank" />
-        <h1>. Select <img id="gold" src="img/Your_Cut_item.png" /> Items</h1>
-        <div id="items">
-            <div class="item"></div>
-            <div class="item"></div>
-            <div class="item"></div>
-            <div class="item"></div>
-            <div class="item"></div>
-            <div class="item"></div>
+    <header class="site-header">
+        <img class="header-portrait" src="img/48px-Garen_OriginalCircle.webp" alt="" />
+        <div class="header-text">
+            <h1>Garen Spin Calculator</h1>
+            <p>Judgment (E) damage with current items and stats</p>
         </div>
-    </div>
+        <span class="patch-badge" id="patchInfo">Loading data...</span>
+    </header>
 
-    <!-- THIS IS WHERE THE USER SELECTS THE ARMOR OF THE ENEMY CHAMP -->
-    <div class="main">
-        <h1>. Select <img id="enemy" src="img/helmet_bro.png" /> Enemy Armor Amount</h1>
-        <img id="dummy" src="img/Enemy_Target_Dummy-f4ab72b7.png" />
-        <input type="number" min="0" value="0" id="enemyArmor" />
-        <p>Set the armor value to 0 to<br>calculate the raw damage of the spin</p>
-        <label class="checkbox">
-            <input type="checkbox" id="targetIsChampion" checked />
-            Target is a champion (apply armor shred)
-        </label>
-    </div>
-
-    <!-- RESULTS -->
-    <div class="main">
-        <fieldset>
-            <legend>Results</legend>
-        
-            <h2>Spins: <span id="spinCount">7</span> </h2>
-        
-            <h2>DMG per spin:
-                <div>
-                    <span id="dmgPerSpin">0</span>
-                    /<img src="img/judgment.webp">
-                    <span id="closestDmgPerSpin">0</span>
-                </div>
-            </h2>
-        
-            <h2><span id="crit-spin-row"><img id="crit-spin" src="img/Critical_strike_icon.webp">&nbsp;spin (<span id="critSpinMultiplier">130%</span>):</span>
-                <div>
-                    <span id="dmgPerCritSpin">0</span>
-                    /<img src="img/judgment.webp">
-                    <span id="closestDmgPerCritSpin">0</span>
-                </div>
+    <main class="layout">
+        <!-- GAREN: level, ability rank and items -->
+        <section class="panel" aria-labelledby="garenTitle">
+            <h2 class="panel-title" id="garenTitle">
+                <img src="img/48px-Garen_OriginalCircle.webp" alt="" /> Garen
             </h2>
 
-            <h2 id="shredded-spin-row" hidden>Final spin (shredded):
-                <div>
-                    <span id="dmgPerShreddedSpin">0</span>
-                    /<img src="img/judgment.webp">
-                    <span id="closestDmgPerShreddedSpin">0</span>
+            <div class="field">
+                <div class="field-header">
+                    <label for="championLevel">Champion level</label>
+                    <output id="levelValue" for="championLevel">1</output>
                 </div>
-            </h2>
-        
-            <h2>Total E DMG:
-                <div>
-                    <span id="totalEDmg">0</span>
-                    /<img src="img/judgment.webp">
-                    <span id="closestTotalEDmg">0</span>
-                </div>
-            </h2>
-        
-            <div id="stats">
-                <div class="row">
-                    <img src="img/AD.png" alt="Attack Damage" />
-                    <h2 id="adValue">69</h2>
-                </div>
-                <div class="row">
-                    <img src="img/attack-speed.webp" alt="Attack Speed" />
-                    <h2 id="asValue">0.625 / 0%</h2>
-                </div>
-                <div class="row">
-                    <img src="img/Critical_strike_icon.webp" alt="Crit Strike Chance / Crit Strike Damage" />
-                    <h2 id="critValue">0% / 200%</h2>
-                </div>
-                <div class="row">
-                    <img src="img/armor_pen.png" alt="Lethality / % Armor Penetration" />
-                    <h2 id="penValue">0 / 0%</h2>
+                <div class="stepper">
+                    <button type="button" class="step-btn" data-target="championLevel" data-step="-1" aria-label="Decrease level">&minus;</button>
+                    <input type="range" id="championLevel" min="1" max="18" value="1" />
+                    <button type="button" class="step-btn" data-target="championLevel" data-step="1" aria-label="Increase level">+</button>
                 </div>
             </div>
-        </fieldset>
-        <p id="patchInfo">Loading game data...</p>
-    </div>
 
-    <dialog id="itemModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Select an Item</h2>
-                <input type="text" id="itemSearch" placeholder="Search items..." />
+            <div class="field">
+                <div class="field-header">
+                    <span id="rankLabel"><img class="inline-icon" src="img/Garen_Judgment.png" alt="" /> Judgment rank</span>
+                </div>
+                <div class="rank-pips" id="eRank" role="radiogroup" aria-labelledby="rankLabel">
+                    <button type="button" role="radio" aria-checked="true" tabindex="0" data-rank="1">1</button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="2">2</button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="3">3</button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="4">4</button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="5">5</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <!-- Items will be dynamically added here -->
+
+            <div class="field">
+                <div class="field-header">
+                    <span><img class="inline-icon" src="img/Your_Cut_item.png" alt="" /> Items</span>
+                </div>
+                <div class="item-slots" id="items"></div>
+            </div>
+        </section>
+
+        <!-- TARGET: enemy armor -->
+        <section class="panel" aria-labelledby="targetTitle">
+            <h2 class="panel-title" id="targetTitle">
+                <img src="img/helmet_bro.png" alt="" /> Target
+            </h2>
+
+            <img class="dummy" src="img/Enemy_Target_Dummy-f4ab72b7.png" alt="" />
+
+            <div class="field">
+                <div class="field-header">
+                    <label for="enemyArmor">Enemy armor</label>
+                    <input type="number" class="number-input" id="enemyArmor" min="0" value="0" inputmode="numeric" />
+                </div>
+                <input type="range" id="armorSlider" min="0" max="400" value="0" aria-label="Enemy armor slider" />
+                <div class="presets" role="group" aria-label="Armor presets">
+                    <button type="button" class="chip" data-armor="0">0</button>
+                    <button type="button" class="chip" data-armor="50">50</button>
+                    <button type="button" class="chip" data-armor="100">100</button>
+                    <button type="button" class="chip" data-armor="150">150</button>
+                    <button type="button" class="chip" data-armor="200">200</button>
+                </div>
+                <p class="hint">Set armor to 0 to see raw damage.</p>
+            </div>
+
+            <label class="switch">
+                <input type="checkbox" id="targetIsChampion" checked />
+                <span class="switch-track" aria-hidden="true"></span>
+                <span class="switch-label">Target is a champion</span>
+            </label>
+            <p class="hint">Champions lose 25% armor after 6 spins, and take Black Cleaver stacks.</p>
+        </section>
+
+        <!-- RESULTS -->
+        <section class="panel results" aria-labelledby="resultsTitle" aria-live="polite">
+            <h2 class="panel-title" id="resultsTitle">
+                <img src="img/judgment.webp" alt="" /> Results
+            </h2>
+
+            <div class="headline">
+                <div class="headline-stat">
+                    <span class="headline-label">Total E damage</span>
+                    <span class="headline-value" id="totalEDmg">0</span>
+                </div>
+                <div class="headline-stat nearest">
+                    <span class="headline-label">Nearest target (+25%)</span>
+                    <span class="headline-value" id="closestTotalEDmg">0</span>
+                </div>
+            </div>
+
+            <dl class="result-rows">
+                <div class="result-row result-head">
+                    <dt></dt>
+                    <dd><span>All</span><span class="nearest-value">Nearest</span></dd>
+                </div>
+                <div class="result-row">
+                    <dt>Spins</dt>
+                    <dd><span id="spinCount">7</span></dd>
+                </div>
+                <div class="result-row">
+                    <dt>Damage per spin</dt>
+                    <dd><span id="dmgPerSpin">0</span><span class="nearest-value" id="closestDmgPerSpin">0</span></dd>
+                </div>
+                <div class="result-row">
+                    <dt><img class="inline-icon" src="img/Critical_strike_icon.webp" alt="" /> <span>Crit spin (<span id="critSpinMultiplier">130%</span>)</span></dt>
+                    <dd><span id="dmgPerCritSpin">0</span><span class="nearest-value" id="closestDmgPerCritSpin">0</span></dd>
+                </div>
+                <div class="result-row" id="shredded-spin-row" hidden>
+                    <dt>Final spin (shredded)</dt>
+                    <dd><span id="dmgPerShreddedSpin">0</span><span class="nearest-value" id="closestDmgPerShreddedSpin">0</span></dd>
+                </div>
+            </dl>
+
+            <div class="stat-grid">
+                <div class="stat" title="Attack damage">
+                    <img src="img/AD.png" alt="Attack damage" />
+                    <span id="adValue">69</span>
+                </div>
+                <div class="stat" title="Attack speed / bonus attack speed">
+                    <img src="img/attack-speed.webp" alt="Attack speed" />
+                    <span id="asValue">0.625 / 0%</span>
+                </div>
+                <div class="stat" title="Crit chance / crit damage">
+                    <img src="img/Critical_strike_icon.webp" alt="Crit chance and crit damage" />
+                    <span id="critValue">0% / 200%</span>
+                </div>
+                <div class="stat" title="Lethality / armor penetration">
+                    <img src="img/armor_pen.png" alt="Lethality and armor penetration" />
+                    <span id="penValue">0 / 0%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PER-SPIN BREAKDOWN -->
+        <section class="panel chart-panel" aria-labelledby="chartTitle">
+            <h2 class="panel-title" id="chartTitle">Per-spin breakdown</h2>
+            <div class="chart" id="spinChart" role="img" aria-label="Damage per spin"></div>
+            <div class="chart-legend">
+                <span><span class="swatch"></span> Damage per spin (no crit, all targets)</span>
+                <span id="legendShred"><span class="swatch shredded"></span> After Judgment's armor shred</span>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            Originally created by <a href="https://github.com/lamoo7/spin-calculator">lamoo7</a>, updated by
+            <a href="https://github.com/yuoopwe/spin-calculator">yuoopwe</a>. Data from Data Dragon and CommunityDragon.
+        </p>
+        <p class="legal">
+            Garen Spin Calculator isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games
+            or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated
+            properties are trademarks or registered trademarks of Riot Games, Inc.
+        </p>
+    </footer>
+
+    <dialog id="itemModal" aria-labelledby="pickerTitle">
+        <div class="picker">
+            <div class="picker-header">
+                <h2 id="pickerTitle">Select an item</h2>
+                <button type="button" class="icon-btn" id="closePicker" aria-label="Close">&times;</button>
+            </div>
+            <input type="search" id="itemSearch" placeholder="Search items..." autocomplete="off" aria-label="Search items" />
+            <div class="filter-chips" id="itemFilters" role="group" aria-label="Filter items">
+                <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+                <button type="button" class="chip" data-filter="ad" aria-pressed="false">AD</button>
+                <button type="button" class="chip" data-filter="as" aria-pressed="false">Attack Speed</button>
+                <button type="button" class="chip" data-filter="crit" aria-pressed="false">Crit</button>
+                <button type="button" class="chip" data-filter="lethality" aria-pressed="false">Lethality</button>
+                <button type="button" class="chip" data-filter="pen" aria-pressed="false">Armor Pen</button>
+                <button type="button" class="chip" data-filter="components" aria-pressed="false">Components</button>
+            </div>
+            <div class="item-grid" id="itemGrid"></div>
+            <div class="picker-footer">
+                <button type="button" class="btn" id="removeItem" hidden>Remove item</button>
             </div>
         </div>
+        <div class="item-tooltip" id="itemTooltip" role="tooltip" hidden></div>
     </dialog>
 
     <script src="scripts/itemAPI.js"></script>

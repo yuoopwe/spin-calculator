@@ -136,6 +136,9 @@ function buildItems(itemData, patch) {
     if (id === LAST_WHISPER_ID || item.from?.includes(LAST_WHISPER_ID)) {
       entry.lastWhisper = true;
     }
+    if (item.into?.length) {
+      entry.component = true;
+    }
 
     const relevant = ["ad", "as", "critChance", "critDamage", "lethality", "pen"].some((k) => entry[k]);
     if (!relevant && !entry.armorShred) continue;
