@@ -69,10 +69,6 @@ Rune and item passive values are read from their descriptions. If Riot rewords o
 
 Check the diff of the JSON files before committing so you can see what changed that patch.
 
-## Credits
-
-Originally created by [lamoo7](https://github.com/lamoo7/spin-calculator). 
-
 ## Legal
 
 The Garen Calculator isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
