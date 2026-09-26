@@ -40,7 +40,7 @@ Check the diff of the two JSON files before committing so you can see what chang
 
 ## Credits
 
-Originally created by [lamoo7](https://github.com/lamoo7/spin-calculator). Used and updated with the author's permission.
+Originally created by [lamoo7](https://github.com/lamoo7/spin-calculator). 
 
 ## Legal
 
