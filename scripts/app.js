@@ -1,13 +1,66 @@
 // app.js
 
 let garenData = null;
-let currentRank = 1;
+let modifierData = null;
+const ranks = { q: 1, e: 1, r: 1 };
+let comboOrder = "e";
 
 const levelInput = document.getElementById("championLevel");
 const armorInput = document.getElementById("enemyArmor");
 const armorSlider = document.getElementById("armorSlider");
+const healthInput = document.getElementById("enemyHealth");
+const healthSlider = document.getElementById("healthSlider");
+const startHealthInput = document.getElementById("startHealth");
 const championToggle = document.getElementById("targetIsChampion");
-const rankButtons = [...document.querySelectorAll("#eRank [data-rank]")];
+const useRToggle = document.getElementById("useR");
+const modifierElements = [...document.querySelectorAll("[data-modifier]")];
+
+const ABILITY_NAMES = { Q: "Decisive Strike", E: "Judgment", R: "Demacian Justice" };
+
+// Rune and item passive controls. `range` gives the slider's [min, max]; `bonus` turns its value into % damage.
+// Controls with an `item` are only shown while that item is equipped.
+const MODIFIERS = {
+  lastStand: {
+    range: (m) => [m.lastStand.minBonus, m.lastStand.maxBonus],
+    bonus: (value) => value,
+    value: (value) => `+${value}%`,
+    hint: (value, m) => {
+      const { minBonus, maxBonus, startHealth, fullHealth } = m.lastStand;
+      if (value >= maxBonus) return `Garen at ${fullHealth}% health or lower. Boosts Q, E and R.`;
+      const health = startHealth - ((value - minBonus) / (maxBonus - minBonus)) * (startHealth - fullHealth);
+      return `Garen at ${Math.round(health)}% health. Boosts Q, E and R.`;
+    },
+  },
+  axiom: {
+    hint: (value, m) => `+${m.axiomArcanist.ultimateBonus}% R damage against a single champion.`,
+  },
+  shojin: {
+    item: (m) => m.spearOfShojin.item,
+    range: (m) => [1, m.spearOfShojin.maxStacks],
+    bonus: (value, m) => value * m.spearOfShojin.perStack,
+    value: (value, m) => `${value} (+${value * m.spearOfShojin.perStack}%)`,
+    hint: () => "Stacks built before the combo. Boosts Q's bonus damage, E and R.",
+  },
+  giantSlayer: {
+    item: (m) => m.giantSlayer.item,
+    range: (m) => [0, m.giantSlayer.maxBonus],
+    bonus: (value) => value,
+    value: (value) => `+${value}%`,
+    hint: (value, m, stats) => {
+      if (!stats.targetIsChampion) return "Only works against champions.";
+      const { maxBonus, maxBonusHealth } = m.giantSlayer;
+      const health = Math.round((value / maxBonus) * maxBonusHealth);
+      return `Target has ${health}${value >= maxBonus ? "+" : ""} bonus health. Boosts Q, E and R.`;
+    },
+  },
+  cinderbloom: {
+    hint: (value, m, stats) => {
+      const { healthThreshold, bonus } = m.cinderbloom;
+      const percent = bonus * (1 + (stats.critDamage - garenData.critDamage) / 100);
+      return `R deals +${Number(percent.toFixed(1))}% when the target is below ${healthThreshold}% health. AP item, so it takes an item slot.`;
+    },
+  },
+};
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -44,36 +97,89 @@ function setText(id, value) {
   document.getElementById(id).textContent = value;
 }
 
+// Shows item passives only while their item is equipped, switching them on when it's added
+function syncItemModifiers() {
+  const missing = [];
+  for (const element of modifierElements) {
+    const config = MODIFIERS[element.dataset.modifier];
+    if (!config.item) continue;
+    const name = config.item(modifierData);
+    const equipped = selectedItems.some((item) => item?.name === name);
+    if (equipped && element.hidden) element.querySelector(".modifier-toggle").checked = true;
+    element.hidden = !equipped;
+    if (!equipped) missing.push(name);
+  }
+  const hint = document.getElementById("itemPassivesHint");
+  hint.hidden = missing.length === 0;
+  hint.textContent = `Equip ${missing.join(" or ")} to use ${missing.length > 1 ? "their passives" : "its passive"}.`;
+}
+
+function readModifiers(stats) {
+  const bonuses = { lastStand: 0, giantSlayer: 0, shojin: 0, axiom: false, cinderbloom: false };
+
+  for (const element of modifierElements) {
+    const key = element.dataset.modifier;
+    const config = MODIFIERS[key];
+    const on = !element.hidden && element.querySelector(".modifier-toggle").checked;
+    const range = element.querySelector(".modifier-range");
+    const value = range ? Number(range.value) : 0;
+
+    if (range) {
+      element.querySelector(".modifier-body").hidden = !on;
+      element.querySelector(".modifier-value").textContent = config.value(value, modifierData);
+      setRangeFill(range);
+      bonuses[key] = on ? config.bonus(value, modifierData) : 0;
+    } else {
+      bonuses[key] = on;
+    }
+    element.querySelector(".modifier-hint").textContent = config.hint(value, modifierData, stats);
+  }
+  return bonuses;
+}
+
 function updateStats() {
   if (!garenData) return;
 
   const level = clamp(parseInt(levelInput.value) || 1, 1, 18);
   const armor = Math.max(0, parseFloat(armorInput.value) || 0);
+  const maxHealth = Math.max(1, parseFloat(healthInput.value) || 1);
+  const startHealthPercent = Number(startHealthInput.value);
   const targetIsChampion = championToggle.checked;
 
-  const bonuses = getItemBonuses();
-  const totalAD = calculateLevelBasedAD(garenData, level) + bonuses.ad;
-  const totalBonusAS = calculateLevelBonusAS(garenData, level) + bonuses.as;
+  const stats = getItemBonuses();
+  const totalAD = calculateLevelBasedAD(garenData, level) + stats.ad;
+  const totalBonusAS = calculateLevelBonusAS(garenData, level) + stats.as;
   const totalAS = calculateTotalAS(garenData, totalBonusAS);
   const spins = calculateSpinCount(garenData, totalBonusAS);
 
+  syncItemModifiers();
+  const bonuses = readModifiers({ ...stats, targetIsChampion });
+  if (!targetIsChampion) bonuses.giantSlayer = 0;
+
   setText("adValue", totalAD.toFixed(2));
   setText("asValue", `${totalAS.toFixed(3)} / ${totalBonusAS.toFixed(2)}%`);
-  setText("critValue", `${bonuses.critChance}% / ${bonuses.critDamage}%`);
-  setText("penValue", `${bonuses.lethality} / ${bonuses.pen}%`);
+  setText("critValue", `${stats.critChance}% / ${stats.critDamage}%`);
+  setText("penValue", `${stats.lethality} / ${stats.pen}%`);
   setText("spinCount", spins);
 
-  const result = calculateJudgment(garenData, {
-    eRank: currentRank,
+  const options = {
+    qRank: ranks.q,
+    eRank: ranks.e,
+    rRank: ranks.r,
     totalAD,
     spins,
-    critChance: bonuses.critChance,
-    critDamage: bonuses.critDamage,
+    critChance: stats.critChance,
+    critDamage: stats.critDamage,
     armor,
-    lethality: bonuses.lethality,
-    pen: bonuses.pen,
-    armorShred: bonuses.armorShred,
+    lethality: stats.lethality,
+    pen: stats.pen,
+    armorShred: stats.armorShred,
     targetIsChampion,
+  };
+
+  const result = calculateJudgment(garenData, {
+    ...options,
+    damageMultiplier: 1 + (bonuses.lastStand + bonuses.giantSlayer + bonuses.shojin) / 100,
   });
 
   setText("dmgPerSpin", result.firstSpin.toFixed(2));
@@ -92,6 +198,70 @@ function updateStats() {
   setText("closestTotalEDmg", result.nearest.totalDamage.toFixed(2));
 
   renderSpinChart(result.spinDetails);
+
+  const combo = calculateCombo(garenData, modifierData, {
+    ...options,
+    order: comboOrder,
+    useR: useRToggle.checked,
+    bonuses,
+    maxHealth,
+    startHealthPercent,
+  });
+  renderCombo(combo, maxHealth);
+}
+
+function renderCombo(combo, maxHealth) {
+  setText("comboTotal", combo.totalDamage.toFixed(2));
+  setText("comboRemaining", Math.round(combo.remainingHealth));
+  const badge = document.getElementById("killBadge");
+  badge.hidden = !combo.kills;
+  badge.title = combo.kills ? `Killed by ${ABILITY_NAMES[combo.killedBy]}` : "";
+
+  const rows = document.getElementById("comboRows");
+  const bar = document.getElementById("healthBar");
+  rows.innerHTML = "";
+  bar.innerHTML = "";
+
+  const addSegment = (className, health, title) => {
+    if (health <= 0) return;
+    const segment = document.createElement("div");
+    segment.className = `health-segment ${className}`;
+    segment.style.width = `${(health / maxHealth) * 100}%`;
+    segment.title = title;
+    bar.appendChild(segment);
+  };
+  addSegment("lost", maxHealth - combo.startHealth, "Missing before the combo");
+
+  let healthBefore = combo.startHealth;
+  for (const step of combo.steps) {
+    const key = step.ability.toLowerCase();
+    const row = document.createElement("div");
+    row.className = "result-row combo-row";
+    if (step.ability === "Q") {
+      row.title = `${step.attack.toFixed(2)} from the attack, ${step.bonus.toFixed(2)} bonus damage`;
+    }
+    const tag = step.cinderbloom ? `<span class="tag">Cinderbloom</span>` : step.ability === "R" ? `<span class="tag">True</span>` : "";
+    row.innerHTML = `
+      <dt>
+        <span class="swatch swatch-${key}"></span>
+        <img class="inline-icon" src="${garenData.icons[key]}" alt="" />
+        <span>${step.ability} &middot; ${ABILITY_NAMES[step.ability]}</span>
+        ${tag}
+      </dt>
+      <dd><span class="${step.skipped ? "muted" : ""}">${step.skipped ? "Not needed" : step.damage.toFixed(2)}</span></dd>
+    `;
+    rows.appendChild(row);
+
+    const dealt = Math.min(step.damage, healthBefore);
+    addSegment(`dealt-${key}`, dealt, `${ABILITY_NAMES[step.ability]}: ${Math.round(dealt)} damage`);
+    healthBefore -= dealt;
+  }
+  addSegment("left", combo.remainingHealth, `${Math.round(combo.remainingHealth)} health left`);
+
+  bar.setAttribute(
+    "aria-label",
+    `Target health: ${Math.round(combo.startHealth)} before the combo, ${Math.round(combo.remainingHealth)} after`
+  );
 }
 
 function renderSpinChart(spinDetails) {
@@ -128,22 +298,54 @@ function setLevel(value) {
   updateStats();
 }
 
-function setRank(rank) {
-  currentRank = rank;
-  for (const button of rankButtons) {
-    const checked = Number(button.dataset.rank) === rank;
-    button.setAttribute("aria-checked", String(checked));
-    button.tabIndex = checked ? 0 : -1;
-  }
-  updateStats();
+// Radio group of buttons with roving tabindex and arrow-key support
+function setupRadioGroup(group, onSelect) {
+  const buttons = [...group.querySelectorAll('[role="radio"]')];
+  const select = (selected) => {
+    for (const button of buttons) {
+      const checked = button === selected;
+      button.setAttribute("aria-checked", String(checked));
+      button.tabIndex = checked ? 0 : -1;
+    }
+    onSelect(selected.dataset.value);
+    updateStats();
+  };
+
+  buttons.forEach((button, index) => {
+    button.addEventListener("click", () => select(button));
+    button.addEventListener("keydown", (e) => {
+      const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+      if (!(e.key in moves)) return;
+      e.preventDefault();
+      const next = buttons[clamp(index + moves[e.key], 0, buttons.length - 1)];
+      next.focus();
+      select(next);
+    });
+  });
 }
 
-function setArmor(value, { fromSlider = false } = {}) {
-  const armor = Math.max(0, Number(value) || 0);
-  if (!fromSlider) armorSlider.value = Math.min(armor, Number(armorSlider.max));
-  if (fromSlider || String(armor) !== armorInput.value) armorInput.value = armor;
-  setRangeFill(armorSlider);
-  updateStats();
+// Keeps a number box and its slider in sync; the box can go past the slider's max
+function bindNumberSlider(input, slider, minimum) {
+  const set = (value, { fromSlider = false } = {}) => {
+    const number = Math.max(minimum, Number(value) || 0);
+    if (!fromSlider) slider.value = Math.min(number, Number(slider.max));
+    if (fromSlider || String(number) !== input.value) input.value = number;
+    setRangeFill(slider);
+    updateStats();
+  };
+
+  input.addEventListener("input", () => {
+    // Leave an empty box alone while the user is typing
+    if (input.value === "") {
+      slider.value = slider.min;
+      setRangeFill(slider);
+      updateStats();
+      return;
+    }
+    set(input.value);
+  });
+  slider.addEventListener("input", () => set(slider.value, { fromSlider: true }));
+  return set;
 }
 
 levelInput.addEventListener("input", () => setLevel(Number(levelInput.value)));
@@ -152,43 +354,50 @@ document.querySelectorAll(".step-btn").forEach((button) => {
   button.addEventListener("click", () => setLevel(Number(levelInput.value) + Number(button.dataset.step)));
 });
 
-rankButtons.forEach((button, index) => {
-  button.addEventListener("click", () => setRank(Number(button.dataset.rank)));
-  button.addEventListener("keydown", (e) => {
-    const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
-    if (!(e.key in moves)) return;
-    e.preventDefault();
-    const next = rankButtons[clamp(index + moves[e.key], 0, rankButtons.length - 1)];
-    next.focus();
-    setRank(Number(next.dataset.rank));
-  });
+document.querySelectorAll("[data-rank]").forEach((group) => {
+  setupRadioGroup(group, (value) => (ranks[group.dataset.rank] = Number(value)));
 });
+setupRadioGroup(document.getElementById("comboOrder"), (value) => (comboOrder = value));
 
-armorInput.addEventListener("input", () => {
-  // Leave an empty box alone while the user is typing
-  if (armorInput.value === "") {
-    armorSlider.value = 0;
-    setRangeFill(armorSlider);
-    updateStats();
-    return;
-  }
-  setArmor(armorInput.value);
-});
-armorSlider.addEventListener("input", () => setArmor(armorSlider.value, { fromSlider: true }));
+const setArmor = bindNumberSlider(armorInput, armorSlider, 0);
+bindNumberSlider(healthInput, healthSlider, 1);
 
 document.querySelectorAll("[data-armor]").forEach((button) => {
   button.addEventListener("click", () => setArmor(button.dataset.armor));
 });
 
+startHealthInput.addEventListener("input", () => {
+  setText("startHealthValue", `${startHealthInput.value}%`);
+  setRangeFill(startHealthInput);
+  updateStats();
+});
+
 championToggle.addEventListener("change", updateStats);
+useRToggle.addEventListener("change", updateStats);
+document.querySelectorAll(".modifier-toggle").forEach((toggle) => toggle.addEventListener("change", updateStats));
+document.querySelectorAll(".modifier-range").forEach((range) => range.addEventListener("input", updateStats));
+
+function setupModifierControls() {
+  document.querySelectorAll("[data-spell]").forEach((img) => (img.src = garenData.icons[img.dataset.spell]));
+  document.querySelectorAll("[data-icon]").forEach((img) => (img.src = modifierData[img.dataset.icon].icon));
+
+  for (const element of modifierElements) {
+    const config = MODIFIERS[element.dataset.modifier];
+    const range = element.querySelector(".modifier-range");
+    if (!range) continue;
+    const [min, max] = config.range(modifierData);
+    Object.assign(range, { min, max, step: 1, value: max });
+  }
+}
 
 // Initialize
 document.addEventListener("DOMContentLoaded", async () => {
-  setRangeFill(levelInput);
-  setRangeFill(armorSlider);
+  for (const range of [levelInput, armorSlider, healthSlider, startHealthInput]) setRangeFill(range);
   try {
-    const { garen } = await gameData;
+    const { garen, modifiers } = await gameData;
     garenData = garen;
+    modifierData = modifiers;
+    setupModifierControls();
     const badge = document.getElementById("patchInfo");
     badge.textContent = `Patch ${garen.patch.split(".").slice(0, 2).join(".")}`;
     badge.title = `Data Dragon ${garen.patch}`;

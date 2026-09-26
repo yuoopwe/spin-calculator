@@ -143,16 +143,35 @@ a:hover {
   padding: 0 1.5rem;
 }
 
-.chart-panel {
-  grid-column: 1 / -1;
+/* Results fill the right column; the combo settings and chart sit under Garen and the target */
+@media (min-width: 1101px) {
+  .results {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+  .combo-panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .chart-panel {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
 }
 
 @media (max-width: 1100px) {
   .layout {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .results {
+  .chart-panel {
     grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .chart-panel {
+    grid-column: auto;
   }
 }
 
@@ -425,13 +444,41 @@ input[type="range"]::-moz-range-thumb {
 
 /* ---------- Rank pips ---------- */
 
+.rank-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.rank-row {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  align-items: center;
+  gap: 0.5rem;
+}
+.rank-name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--gold-text);
+}
+.rank-name .inline-icon {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--gold-700);
+}
+
 .rank-pips {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   gap: 0.4rem;
 }
 .rank-pips button {
-  height: 40px;
+  height: 36px;
+  padding: 0;
+  white-space: nowrap;
   cursor: pointer;
   border: 1px solid var(--gold-900);
   background: var(--navy-900);
@@ -591,7 +638,47 @@ input[type="range"]::-moz-range-thumb {
   outline-offset: 2px;
 }
 .switch-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 600;
+}
+
+/* ---------- Combo panel ---------- */
+
+.subheading {
+  margin: 0;
+  color: var(--gold-500);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.modifier-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(120, 90, 40, 0.35);
+}
+
+.modifier {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.modifier-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: calc(42px + 0.7rem);
+}
+.modifier-body .field-header output {
+  font-size: 1.05rem;
+}
+.modifier > .hint {
+  padding-left: calc(42px + 0.7rem);
 }
 
 /* ---------- Results ---------- */
@@ -630,6 +717,83 @@ input[type="range"]::-moz-range-thumb {
 .headline-stat.nearest .headline-value {
   color: var(--blue-300);
 }
+.headline-stat.health {
+  border-color: rgba(232, 64, 87, 0.35);
+  background: linear-gradient(180deg, rgba(232, 64, 87, 0.14), transparent);
+}
+.headline-stat.health .headline-value {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kill-badge {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--danger);
+  background: rgba(232, 64, 87, 0.2);
+  color: #ff8a9a;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.health-bar {
+  display: flex;
+  height: 14px;
+  overflow: hidden;
+  border: 1px solid var(--gold-700);
+  background: var(--navy-900);
+}
+.health-segment {
+  transition: width 0.25s ease;
+}
+.health-segment + .health-segment {
+  border-left: 1px solid var(--navy-900);
+}
+.health-segment.lost {
+  background: repeating-linear-gradient(135deg, var(--grey-800) 0 4px, var(--navy-900) 4px 8px);
+}
+.health-segment.left {
+  background: linear-gradient(180deg, #d9454f, #8c1c26);
+}
+.health-segment.dealt-q,
+.swatch.swatch-q {
+  border-color: var(--gold-500);
+  background: linear-gradient(180deg, var(--gold-500), var(--gold-700));
+}
+.health-segment.dealt-e,
+.swatch.swatch-e {
+  border-color: var(--blue-300);
+  background: linear-gradient(180deg, var(--blue-300), var(--blue-700));
+}
+.health-segment.dealt-r,
+.swatch.swatch-r {
+  border-color: var(--gold-300);
+  background: linear-gradient(180deg, var(--gold-300), var(--gold-500));
+}
+
+.combo-row dt {
+  flex-wrap: wrap;
+}
+.tag {
+  padding: 0 0.35rem;
+  border: 1px solid var(--gold-700);
+  color: var(--muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.muted {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.results .subheading {
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(120, 90, 40, 0.35);
+}
 
 .result-rows {
   margin: 0;
@@ -658,6 +822,7 @@ input[type="range"]::-moz-range-thumb {
 .result-row dd > span {
   min-width: 4.5em;
   text-align: right;
+  white-space: nowrap;
 }
 .result-row .nearest-value {
   color: var(--blue-300);

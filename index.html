@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Garen Spin Calculator</title>
-    <meta name="description" content="Calculate the damage of Garen's Judgment (E) with current League of Legends items and stats." />
+    <meta name="description" content="Calculate the damage of Garen's Judgment (E) and Q, E and R combos with current League of Legends items, runes and stats." />
     <link rel="shortcut icon" href="img/Garen_Judgment.png" type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +18,7 @@
         <img class="header-portrait" src="img/48px-Garen_OriginalCircle.webp" alt="" />
         <div class="header-text">
             <h1>Garen Spin Calculator</h1>
-            <p>Judgment (E) damage with current items and stats</p>
+            <p>Judgment and full combo damage with current items, runes and stats</p>
         </div>
         <span class="patch-badge" id="patchInfo">Loading data...</span>
     </header>
@@ -44,14 +44,37 @@
 
             <div class="field">
                 <div class="field-header">
-                    <span id="rankLabel"><img class="inline-icon" src="img/Garen_Judgment.png" alt="" /> Judgment rank</span>
+                    <span>Ability ranks</span>
                 </div>
-                <div class="rank-pips" id="eRank" role="radiogroup" aria-labelledby="rankLabel">
-                    <button type="button" role="radio" aria-checked="true" tabindex="0" data-rank="1">1</button>
-                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="2">2</button>
-                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="3">3</button>
-                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="4">4</button>
-                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-rank="5">5</button>
+                <div class="rank-rows">
+                    <div class="rank-row">
+                        <span class="rank-name" title="Decisive Strike"><img class="inline-icon" data-spell="q" alt="" /> Q</span>
+                        <div class="rank-pips" data-rank="q" role="radiogroup" aria-label="Decisive Strike (Q) rank">
+                            <button type="button" role="radio" aria-checked="true" tabindex="0" data-value="1">1</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="2">2</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="3">3</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="4">4</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="5">5</button>
+                        </div>
+                    </div>
+                    <div class="rank-row">
+                        <span class="rank-name" title="Judgment"><img class="inline-icon" src="img/Garen_Judgment.png" data-spell="e" alt="" /> E</span>
+                        <div class="rank-pips" data-rank="e" role="radiogroup" aria-label="Judgment (E) rank">
+                            <button type="button" role="radio" aria-checked="true" tabindex="0" data-value="1">1</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="2">2</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="3">3</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="4">4</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="5">5</button>
+                        </div>
+                    </div>
+                    <div class="rank-row">
+                        <span class="rank-name" title="Demacian Justice"><img class="inline-icon" data-spell="r" alt="" /> R</span>
+                        <div class="rank-pips" data-rank="r" role="radiogroup" aria-label="Demacian Justice (R) rank">
+                            <button type="button" role="radio" aria-checked="true" tabindex="0" data-value="1">1</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="2">2</button>
+                            <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="3">3</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -87,6 +110,22 @@
                 <p class="hint">Set armor to 0 to see raw damage.</p>
             </div>
 
+            <div class="field">
+                <div class="field-header">
+                    <label for="enemyHealth">Max health</label>
+                    <input type="number" class="number-input" id="enemyHealth" min="1" value="2500" inputmode="numeric" />
+                </div>
+                <input type="range" id="healthSlider" min="500" max="6000" step="50" value="2500" aria-label="Max health slider" />
+            </div>
+
+            <div class="field">
+                <div class="field-header">
+                    <label for="startHealth">Starting health</label>
+                    <output id="startHealthValue" for="startHealth">100%</output>
+                </div>
+                <input type="range" id="startHealth" min="1" max="100" value="100" />
+            </div>
+
             <label class="switch">
                 <input type="checkbox" id="targetIsChampion" checked />
                 <span class="switch-track" aria-hidden="true"></span>
@@ -95,11 +134,126 @@
             <p class="hint">Champions lose 25% armor after 6 spins, and take Black Cleaver stacks.</p>
         </section>
 
+        <!-- COMBO: ability order, R and damage modifiers -->
+        <section class="panel combo-panel" aria-labelledby="comboTitle">
+            <h2 class="panel-title" id="comboTitle">
+                <img data-spell="r" alt="" /> Combo
+            </h2>
+
+            <div class="field">
+                <div class="field-header">
+                    <span id="orderLabel">Ability order</span>
+                </div>
+                <div class="rank-pips order-picker" id="comboOrder" role="radiogroup" aria-labelledby="orderLabel">
+                    <button type="button" role="radio" aria-checked="true" tabindex="0" data-value="e">E</button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="qe">Q &rarr; E</button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="eq">E &rarr; Q</button>
+                </div>
+            </div>
+
+            <label class="switch">
+                <input type="checkbox" id="useR" />
+                <span class="switch-track" aria-hidden="true"></span>
+                <span class="switch-label">Finish with R</span>
+            </label>
+
+            <div class="modifier-group">
+                <h3 class="subheading">Runes</h3>
+
+                <div class="modifier" data-modifier="lastStand">
+                    <label class="switch">
+                        <input type="checkbox" class="modifier-toggle" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-label"><img class="inline-icon" data-icon="lastStand" alt="" /> Last Stand</span>
+                    </label>
+                    <div class="modifier-body" hidden>
+                        <div class="field-header">
+                            <label for="lastStandSlider">Bonus damage</label>
+                            <output class="modifier-value" for="lastStandSlider"></output>
+                        </div>
+                        <input type="range" class="modifier-range" id="lastStandSlider" />
+                    </div>
+                    <p class="hint modifier-hint"></p>
+                </div>
+
+                <div class="modifier" data-modifier="axiom">
+                    <label class="switch">
+                        <input type="checkbox" class="modifier-toggle" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-label"><img class="inline-icon" data-icon="axiomArcanist" alt="" /> Axiom Arcanist</span>
+                    </label>
+                    <p class="hint modifier-hint"></p>
+                </div>
+            </div>
+
+            <div class="modifier-group">
+                <h3 class="subheading">Item passives</h3>
+
+                <div class="modifier" data-modifier="shojin" hidden>
+                    <label class="switch">
+                        <input type="checkbox" class="modifier-toggle" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-label"><img class="inline-icon" data-icon="spearOfShojin" alt="" /> Spear of Shojin</span>
+                    </label>
+                    <div class="modifier-body" hidden>
+                        <div class="field-header">
+                            <label for="shojinSlider">Stacks</label>
+                            <output class="modifier-value" for="shojinSlider"></output>
+                        </div>
+                        <input type="range" class="modifier-range" id="shojinSlider" />
+                    </div>
+                    <p class="hint modifier-hint"></p>
+                </div>
+
+                <div class="modifier" data-modifier="giantSlayer" hidden>
+                    <label class="switch">
+                        <input type="checkbox" class="modifier-toggle" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-label"><img class="inline-icon" data-icon="giantSlayer" alt="" /> Giant Slayer</span>
+                    </label>
+                    <div class="modifier-body" hidden>
+                        <div class="field-header">
+                            <label for="giantSlayerSlider">Bonus damage</label>
+                            <output class="modifier-value" for="giantSlayerSlider"></output>
+                        </div>
+                        <input type="range" class="modifier-range" id="giantSlayerSlider" />
+                    </div>
+                    <p class="hint modifier-hint"></p>
+                </div>
+
+                <div class="modifier" data-modifier="cinderbloom">
+                    <label class="switch">
+                        <input type="checkbox" class="modifier-toggle" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-label"><img class="inline-icon" data-icon="cinderbloom" alt="" /> Shadowflame</span>
+                    </label>
+                    <p class="hint modifier-hint"></p>
+                </div>
+
+                <p class="hint" id="itemPassivesHint">Equip Spear of Shojin or Lord Dominik's Regards to use their passives.</p>
+            </div>
+        </section>
+
         <!-- RESULTS -->
         <section class="panel results" aria-labelledby="resultsTitle" aria-live="polite">
             <h2 class="panel-title" id="resultsTitle">
                 <img src="img/judgment.webp" alt="" /> Results
             </h2>
+
+            <div class="headline">
+                <div class="headline-stat">
+                    <span class="headline-label">Combo damage</span>
+                    <span class="headline-value" id="comboTotal">0</span>
+                </div>
+                <div class="headline-stat health">
+                    <span class="headline-label">Target health left</span>
+                    <span class="headline-value"><span id="comboRemaining">0</span> <span class="kill-badge" id="killBadge" hidden>Kill</span></span>
+                </div>
+            </div>
+            <div class="health-bar" id="healthBar" role="img" aria-label="Target health"></div>
+            <dl class="result-rows" id="comboRows"></dl>
+
+            <h3 class="subheading">Judgment breakdown</h3>
 
             <div class="headline">
                 <div class="headline-stat">

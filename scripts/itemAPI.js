@@ -7,6 +7,8 @@ async function fetchJSON(url) {
 }
 
 // Shared by app.js and modal.js so the data files are only fetched once
-const gameData = Promise.all([fetchJSON("data/garen.json"), fetchJSON("data/items.json")]).then(
-  ([garen, itemData]) => ({ garen, items: itemData.items })
-);
+const gameData = Promise.all([
+  fetchJSON("data/garen.json"),
+  fetchJSON("data/items.json"),
+  fetchJSON("data/modifiers.json"),
+]).then(([garen, itemData, modifiers]) => ({ garen, items: itemData.items, modifiers }));

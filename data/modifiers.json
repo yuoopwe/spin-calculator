@@ -1,0 +1,33 @@
+{
+  "patch": "16.19.1",
+  "lastStand": {
+    "minBonus": 5,
+    "maxBonus": 11,
+    "startHealth": 60,
+    "fullHealth": 30,
+    "icon": "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Sorcery/LastStand/LastStand.png"
+  },
+  "axiomArcanist": {
+    "ultimateBonus": 12,
+    "aoeUltimateBonus": 8,
+    "icon": "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Sorcery/NullifyingOrb/Axiom_Arcanist.png"
+  },
+  "spearOfShojin": {
+    "item": "Spear of Shojin",
+    "perStack": 3,
+    "maxStacks": 4,
+    "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3161.png"
+  },
+  "giantSlayer": {
+    "item": "Lord Dominik's Regards",
+    "maxBonus": 15,
+    "maxBonusHealth": 1500,
+    "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3036.png"
+  },
+  "cinderbloom": {
+    "item": "Shadowflame",
+    "healthThreshold": 40,
+    "bonus": 20,
+    "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/4645.png"
+  }
+}

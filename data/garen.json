@@ -28,5 +28,32 @@
     "critMod": 0.3,
     "shredAmount": 0.25,
     "hitsToShred": 6
+  },
+  "decisiveStrike": {
+    "bonusDamage": [
+      30,
+      60,
+      90,
+      120,
+      150
+    ],
+    "bonusADRatio": 0.5
+  },
+  "demacianJustice": {
+    "baseDamage": [
+      125,
+      200,
+      275
+    ],
+    "missingHealthRatio": [
+      0.25,
+      0.3,
+      0.35
+    ]
+  },
+  "icons": {
+    "q": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/spell/GarenQ.png",
+    "e": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/spell/GarenE.png",
+    "r": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/spell/GarenR.png"
   }
 }
