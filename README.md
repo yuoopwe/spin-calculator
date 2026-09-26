@@ -25,17 +25,20 @@ The combo is against a single target, so Judgment always gets the nearest-enemy 
 
 ### Runes and item passives
 
-Since V26.09, damage-dealt bonuses add together rather than multiplying.
+Since V26.09, damage-dealt bonuses add together rather than multiplying. Conqueror gives bonus AD rather than a damage bonus, so it raises the AD the abilities scale from.
 
 | Modifier | Value | Applies to |
 | --- | --- | --- |
+| Conqueror | 1.08–2.4 bonus AD per stack by level (1.8–4 adaptive force × 0.6), up to 12 stacks | Q and E (R doesn't scale with AD) |
 | Last Stand | 5% below 60% health, up to 11% at 30% health | Q, E and R |
 | Axiom Arcanist | 12% (single target) | R |
 | Spear of Shojin | 3% per stack, up to 4 stacks | Q's bonus damage, E and R |
 | Giant Slayer (Lord Dominik's Regards) | 1% per 100 bonus health on the target, up to 15% at 1500 | Q, E and R, champions only |
 | Cinderbloom (Shadowflame) | 20% × (1 + bonus crit damage), so 26% with Infinity Edge | R, when the target is below 40% health |
 
-The sliders set the value that applies for the whole combo, for example how many Shojin stacks are built before it starts. Shojin and Giant Slayer only appear while their item is equipped. Shadowflame is an AP item and has no AD stats, so it's a separate toggle rather than an item you equip. Cinderbloom is its own multiplier on top of the other bonuses.
+Conqueror's slider sets the stacks you start with (0 for a fresh fight). Stacks then build during the combo: Q adds 2, and Judgment is special-cased to add 2 on every spin, so it reaches 12 stacks by the seventh spin. Each hit uses the stacks from the hits before it. Stacks only build against champions.
+
+The other sliders set the value that applies for the whole combo, for example how many Shojin stacks are built before it starts. Shojin and Giant Slayer only appear while their item is equipped. Shadowflame is an AP item and has no AD stats, so it's a separate toggle rather than an item you equip. Cinderbloom is its own multiplier on top of the other bonuses.
 
 These modifiers also apply to the Judgment breakdown and per-spin chart.
 

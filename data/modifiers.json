@@ -1,5 +1,13 @@
 {
   "patch": "16.19.1",
+  "conqueror": {
+    "minForce": 1.8,
+    "maxForce": 4,
+    "maxStacks": 12,
+    "stacksPerHit": 2,
+    "adPerForce": 0.6,
+    "icon": "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Precision/Conqueror/Conqueror.png"
+  },
   "lastStand": {
     "minBonus": 5,
     "maxBonus": 11,

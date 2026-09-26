@@ -60,12 +60,25 @@ function getArmorReductions(garen, spin, { armorShred, targetIsChampion, priorCl
   return reductions;
 }
 
+// Bonus AD per Conqueror stack, scaling linearly from level 1 to 18
+function calculateConquerorADPerStack(modifiers, level) {
+  const { minForce, maxForce, adPerForce } = modifiers.conqueror;
+  return adPerForce * (minForce + ((maxForce - minForce) * (level - 1)) / 17);
+}
+
+// Stacks active when hit number `hit` (1-based) lands; a hit adds its own stacks after dealing damage.
+// `conqueror` is { adPerStack, startStacks, maxStacks, stacksPerHit }, or null when not taken.
+function getConquerorStacks(conqueror, hit) {
+  if (!conqueror) return 0;
+  return Math.min(conqueror.startStacks + (hit - 1) * conqueror.stacksPerHit, conqueror.maxStacks);
+}
+
 function calculateJudgment(garen, options) {
-  const { eRank, totalAD, spins, critChance, critDamage, armor, lethality, pen, damageMultiplier = 1 } = options;
+  const { eRank, totalAD, spins, critChance, critDamage, armor, lethality, pen } = options;
+  const { damageMultiplier = 1, conqueror = null } = options;
   const e = garen.judgment;
 
-  const rawDamagePerSpin =
-    (e.baseDamagePerSpin[eRank - 1] + e.adRatioPerSpin[eRank - 1] * totalAD) * damageMultiplier;
+  const rawDamageAt = (ad) => (e.baseDamagePerSpin[eRank - 1] + e.adRatioPerSpin[eRank - 1] * ad) * damageMultiplier;
   const critMultiplier = calculateCritSpinMultiplier(garen, critDamage);
   const expectedCritMultiplier = 1 + (critChance / 100) * (critMultiplier - 1);
   const nearestMultiplier = 1 + e.nearestEnemyBonus;
@@ -75,12 +88,15 @@ function calculateJudgment(garen, options) {
   for (let spin = 1; spin <= spins; spin++) {
     const reductions = getArmorReductions(garen, spin, options);
     const finalArmor = calculateEffectiveArmor(armor, reductions, pen, lethality);
-    const damage = rawDamagePerSpin * calculateDamageMultiplier(finalArmor);
+    const conquerorStacks = getConquerorStacks(conqueror, spin);
+    const spinAD = totalAD + conquerorStacks * (conqueror?.adPerStack ?? 0);
+    const damage = rawDamageAt(spinAD) * calculateDamageMultiplier(finalArmor);
     spinDamage.push(damage);
     spinDetails.push({
       spin,
       damage,
       armor: finalArmor,
+      conquerorStacks,
       judgmentShred: options.targetIsChampion && armor > 0 && spin > e.hitsToShred,
     });
   }
@@ -144,7 +160,7 @@ const COMBO_ORDERS = {
 // Damage-dealt modifiers add together (since V26.09).
 function calculateCombo(garen, modifiers, options) {
   const { order, useR, qRank, rRank, bonuses, maxHealth, startHealthPercent, critDamage } = options;
-  const { armor, pen, lethality, armorShred, targetIsChampion, spins } = options;
+  const { armor, pen, lethality, armorShred, targetIsChampion, spins, totalAD, conqueror = null } = options;
 
   const sharedBonus = bonuses.lastStand + bonuses.giantSlayer;
   const attackMultiplier = 1 + sharedBonus / 100;
@@ -154,7 +170,7 @@ function calculateCombo(garen, modifiers, options) {
 
   const startHealth = (maxHealth * startHealthPercent) / 100;
   let health = startHealth;
-  let hitsLanded = 0; // every hit applies a Black Cleaver stack
+  let hitsLanded = 0; // every hit applies a Black Cleaver stack and Conqueror stacks
   let judgmentHits = 0; // only Judgment spins count towards its armor shred
   let killedBy = null;
   const steps = [];
@@ -166,6 +182,7 @@ function calculateCombo(garen, modifiers, options) {
   };
 
   for (const ability of COMBO_ORDERS[order]) {
+    const conquerorStacks = getConquerorStacks(conqueror, hitsLanded + 1);
     if (ability === "Q") {
       const reductions = getArmorReductions(garen, judgmentHits + 1, {
         armorShred,
@@ -176,22 +193,24 @@ function calculateCombo(garen, modifiers, options) {
       const q = calculateDecisiveStrike(garen, {
         ...options,
         qRank,
+        totalAD: totalAD + conquerorStacks * (conqueror?.adPerStack ?? 0),
         armorMultiplier,
         attackMultiplier,
         bonusMultiplier: abilityMultiplier,
       });
       hitsLanded += 1;
-      record("Q", q.total, { attack: q.attack, bonus: q.bonus });
+      record("Q", q.total, { attack: q.attack, bonus: q.bonus, conquerorStacks });
     } else {
       const e = calculateJudgment(garen, {
         ...options,
         priorCleaverStacks: hitsLanded,
         damageMultiplier: abilityMultiplier,
+        conqueror: conqueror && { ...conqueror, startStacks: conquerorStacks },
       });
       hitsLanded += spins;
       judgmentHits += spins;
       // Single-target combo, so the target is always the nearest enemy
-      record("E", e.nearest.totalDamage);
+      record("E", e.nearest.totalDamage, { conquerorStacks });
     }
   }
 

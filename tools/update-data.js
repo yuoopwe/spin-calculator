@@ -106,6 +106,9 @@ function buildGaren(bin, patch, contentVersion) {
 
 // ---------- Runes and item passives ----------
 
+// Adaptive force gives AD champions 0.6 AD per point; rune text only states the adaptive force
+const ADAPTIVE_FORCE_TO_AD = 0.6;
+
 const stripTags = (html) => html.replace(/<br\s*\/?>/g, " ").replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
 
 function match(text, re, label) {
@@ -133,6 +136,15 @@ function findPerk(perks, name) {
 }
 
 function buildModifiers(itemData, perks, patch) {
+  const conqueror = findPerk(perks, "Conqueror");
+  const [minForce, maxForce] = match(
+    conqueror.text,
+    /gaining ([\d.]+)-([\d.]+) Adaptive Force per stack/,
+    "Conqueror adaptive force"
+  );
+  const [maxStacks] = match(conqueror.text, /Stacks up to (\d+) times/, "Conqueror max stacks");
+  const [stacksPerHit] = match(conqueror.text, /grant (\d+) stacks/, "Conqueror stacks per hit");
+
   const lastStand = findPerk(perks, "Last Stand");
   const [minBonus, maxBonus] = match(lastStand.text, /(\d+)% - (\d+)% increased damage/, "Last Stand bonus");
   const [startHealth] = match(lastStand.text, /below (\d+)% health/, "Last Stand start health");
@@ -144,7 +156,7 @@ function buildModifiers(itemData, perks, patch) {
 
   const shojin = findItem(itemData, "Spear of Shojin", patch);
   const [perStack] = match(shojin.text, /Passive damage by (\d+)%/, "Spear of Shojin per stack");
-  const [maxStacks] = match(shojin.text, /stacks (\d+) times/, "Spear of Shojin stacks");
+  const [shojinStacks] = match(shojin.text, /stacks (\d+) times/, "Spear of Shojin stacks");
 
   const ldr = findItem(itemData, "Lord Dominik's Regards", patch);
   const [giantSlayerMax] = match(ldr.text, /up to (\d+)% bonus damage/, "Giant Slayer bonus");
@@ -159,9 +171,17 @@ function buildModifiers(itemData, perks, patch) {
 
   return {
     patch,
+    conqueror: {
+      minForce,
+      maxForce,
+      maxStacks,
+      stacksPerHit,
+      adPerForce: ADAPTIVE_FORCE_TO_AD,
+      icon: conqueror.icon,
+    },
     lastStand: { minBonus, maxBonus, startHealth, fullHealth, icon: lastStand.icon },
     axiomArcanist: { ultimateBonus, aoeUltimateBonus, icon: axiom.icon },
-    spearOfShojin: { item: "Spear of Shojin", perStack, maxStacks, icon: shojin.icon },
+    spearOfShojin: { item: "Spear of Shojin", perStack, maxStacks: shojinStacks, icon: shojin.icon },
     giantSlayer: { item: "Lord Dominik's Regards", maxBonus: giantSlayerMax, maxBonusHealth, icon: ldr.icon },
     cinderbloom: { item: "Shadowflame", healthThreshold: threshold, bonus: cinderbloomBonus, icon: shadowflame.icon },
   };

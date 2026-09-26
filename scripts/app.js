@@ -17,9 +17,22 @@ const modifierElements = [...document.querySelectorAll("[data-modifier]")];
 
 const ABILITY_NAMES = { Q: "Decisive Strike", E: "Judgment", R: "Demacian Justice" };
 
-// Rune and item passive controls. `range` gives the slider's [min, max]; `bonus` turns its value into % damage.
+// Rune and item passive controls. `range` gives the slider's [min, max] and `initial` its starting value
+// (defaults to max); `bonus` turns the value into % damage, or starting stacks for Conqueror.
 // Controls with an `item` are only shown while that item is equipped.
 const MODIFIERS = {
+  conqueror: {
+    range: (m) => [0, m.conqueror.maxStacks],
+    initial: () => 0,
+    bonus: (value) => value,
+    value: (value, m, stats) => `${value} (+${(value * calculateConquerorADPerStack(m, stats.level)).toFixed(1)} AD)`,
+    hint: (value, m, stats) => {
+      if (!stats.targetIsChampion) return "Only stacks against champions.";
+      const { maxStacks, stacksPerHit } = m.conqueror;
+      const fullAD = maxStacks * calculateConquerorADPerStack(m, stats.level);
+      return `Q and each E spin add ${stacksPerHit} stacks. Full stacks: +${fullAD.toFixed(1)} AD at level ${stats.level}.`;
+    },
+  },
   lastStand: {
     range: (m) => [m.lastStand.minBonus, m.lastStand.maxBonus],
     bonus: (value) => value,
@@ -115,7 +128,7 @@ function syncItemModifiers() {
 }
 
 function readModifiers(stats) {
-  const bonuses = { lastStand: 0, giantSlayer: 0, shojin: 0, axiom: false, cinderbloom: false };
+  const bonuses = { conqueror: null, lastStand: 0, giantSlayer: 0, shojin: 0, axiom: false, cinderbloom: false };
 
   for (const element of modifierElements) {
     const key = element.dataset.modifier;
@@ -126,9 +139,9 @@ function readModifiers(stats) {
 
     if (range) {
       element.querySelector(".modifier-body").hidden = !on;
-      element.querySelector(".modifier-value").textContent = config.value(value, modifierData);
+      element.querySelector(".modifier-value").textContent = config.value(value, modifierData, stats);
       setRangeFill(range);
-      bonuses[key] = on ? config.bonus(value, modifierData) : 0;
+      if (on) bonuses[key] = config.bonus(value, modifierData);
     } else {
       bonuses[key] = on;
     }
@@ -153,8 +166,14 @@ function updateStats() {
   const spins = calculateSpinCount(garenData, totalBonusAS);
 
   syncItemModifiers();
-  const bonuses = readModifiers({ ...stats, targetIsChampion });
+  const bonuses = readModifiers({ ...stats, targetIsChampion, level });
   if (!targetIsChampion) bonuses.giantSlayer = 0;
+  const conqueror = bonuses.conqueror === null ? null : {
+    adPerStack: calculateConquerorADPerStack(modifierData, level),
+    startStacks: bonuses.conqueror,
+    maxStacks: modifierData.conqueror.maxStacks,
+    stacksPerHit: targetIsChampion ? modifierData.conqueror.stacksPerHit : 0,
+  };
 
   setText("adValue", totalAD.toFixed(2));
   setText("asValue", `${totalAS.toFixed(3)} / ${totalBonusAS.toFixed(2)}%`);
@@ -175,6 +194,7 @@ function updateStats() {
     pen: stats.pen,
     armorShred: stats.armorShred,
     targetIsChampion,
+    conqueror,
   };
 
   const result = calculateJudgment(garenData, {
@@ -188,7 +208,7 @@ function updateStats() {
   setText("dmgPerCritSpin", result.firstCritSpin.toFixed(2));
   setText("closestDmgPerCritSpin", result.nearest.firstCritSpin.toFixed(2));
 
-  // Only worth showing when armor shred makes later spins hit harder
+  // Only worth showing when armor shred or Conqueror stacks make later spins hit harder
   const shredRow = document.getElementById("shredded-spin-row");
   shredRow.hidden = result.lastSpin.toFixed(2) === result.firstSpin.toFixed(2);
   setText("dmgPerShreddedSpin", result.lastSpin.toFixed(2));
@@ -272,7 +292,8 @@ function renderSpinChart(spinDetails) {
   for (const spin of spinDetails) {
     const bar = document.createElement("div");
     bar.className = spin.judgmentShred ? "bar shredded" : "bar";
-    bar.title = `Spin ${spin.spin}: ${spin.damage.toFixed(2)} damage against ${spin.armor.toFixed(1)} armor`;
+    const stacks = spin.conquerorStacks ? `, ${spin.conquerorStacks} Conqueror stacks` : "";
+    bar.title = `Spin ${spin.spin}: ${spin.damage.toFixed(2)} damage against ${spin.armor.toFixed(1)} armor${stacks}`;
     bar.innerHTML = `
       <div class="bar-track">
         <span class="bar-value">${Math.round(spin.damage)}</span>
@@ -287,6 +308,8 @@ function renderSpinChart(spinDetails) {
   const last = spinDetails[spinDetails.length - 1].damage.toFixed(2);
   chart.setAttribute("aria-label", `${spinDetails.length} spins, from ${first} to ${last} damage each`);
   document.getElementById("legendShred").hidden = !spinDetails.some((s) => s.judgmentShred);
+  document.getElementById("legendConqueror").hidden =
+    spinDetails[0].conquerorStacks === spinDetails[spinDetails.length - 1].conquerorStacks;
 }
 
 // ---------- Controls ----------
@@ -386,7 +409,7 @@ function setupModifierControls() {
     const range = element.querySelector(".modifier-range");
     if (!range) continue;
     const [min, max] = config.range(modifierData);
-    Object.assign(range, { min, max, step: 1, value: max });
+    Object.assign(range, { min, max, step: 1, value: config.initial?.(modifierData) ?? max });
   }
 }
 
