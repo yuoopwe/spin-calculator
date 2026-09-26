@@ -49,7 +49,7 @@ const MODIFIERS = {
   },
   shojin: {
     item: (m) => m.spearOfShojin.item,
-    range: (m) => [1, m.spearOfShojin.maxStacks],
+    range: (m) => [0, m.spearOfShojin.maxStacks],
     bonus: (value, m) => value * m.spearOfShojin.perStack,
     value: (value, m) => `${value} (+${value * m.spearOfShojin.perStack}%)`,
     hint: () => "Stacks built before the combo. Boosts Q's bonus damage, E and R.",
