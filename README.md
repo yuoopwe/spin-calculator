@@ -1,4 +1,4 @@
-# Garen Spin Calculator
+# The Garen Calculator
 
 A calculator for the damage of Garen's **Judgment** (E) and his Q, E and R combos in League of Legends. Pick Garen's level, ability ranks, items, runes and the enemy's armor and health to see:
 
@@ -75,4 +75,4 @@ Originally created by [lamoo7](https://github.com/lamoo7/spin-calculator).
 
 ## Legal
 
-Garen Spin Calculator isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+The Garen Calculator isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
