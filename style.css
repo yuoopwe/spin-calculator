@@ -133,7 +133,30 @@ img[src="img/judgment.webp"] {
   font-size: 1.5em;
 }
 
-#spinCount, #dmgPerSpin, #totalEDmg, #closestDmgPerSpin, #closestTotalEDmg, #dmgPerCritSpin, #closestDmgPerCritSpin {
+[hidden] {
+  display: none !important;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+.checkbox input {
+  margin: 0;
+  width: 1.2em;
+  height: 1.2em;
+  accent-color: #c89b3c;
+}
+
+.item-gold {
+  color: #c89b3c;
+  font-weight: normal;
+  font-size: 0.85em;
+}
+
+#spinCount, #dmgPerSpin, #totalEDmg, #closestDmgPerSpin, #closestTotalEDmg, #dmgPerCritSpin, #closestDmgPerCritSpin, #dmgPerShreddedSpin, #closestDmgPerShreddedSpin {
   color: #c89b3c;
   color: color-mix(in srgb, #f0e6d2, #c89b3c);
 }

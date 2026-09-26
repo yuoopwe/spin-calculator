@@ -1,104 +1,97 @@
 // calculator.js
+// All champion constants come from data/garen.json (see tools/update-data.js).
 
-// Constants for Garen's base stats and growth
-const baseAD = 69;
-const growthAD = 4.5;
-const baseAS = 0.625;
-const ASRatio = 0.625;
-const growthAS = 3.65;
-
-// Calculate level-based AD
-function calculateLevelBasedAD(level) {
+// Riot's per-level stat growth: stat * (n - 1) * (0.7025 + 0.0175 * (n - 1))
+function levelGrowth(level) {
   const levelUps = level - 1;
-  const growthFactor = 0.7025 + 0.0175 * levelUps;
-  return baseAD + growthAD * levelUps * growthFactor;
+  return levelUps * (0.7025 + 0.0175 * levelUps);
 }
 
-// Calculate level-based AS
-function calculateLevelBasedAS(level) {
-  const levelUps = level - 1;
-  const growthFactor = 0.7025 + 0.0175 * levelUps;
-  const bonusASFromLevels = growthAS * levelUps * growthFactor;
-  return {
-    levelBasedAS: baseAS + (bonusASFromLevels / 100) * ASRatio,
-    levelBonusAS: bonusASFromLevels
-  };
+function calculateLevelBasedAD(garen, level) {
+  return garen.baseAD + garen.adPerLevel * levelGrowth(level);
 }
 
-// Calculate total AD by combining level-based and item AD
-function calculateTotalAD(levelBasedAD, itemAD) {
-  return levelBasedAD + itemAD;
+// Bonus attack speed (%) gained from levels
+function calculateLevelBonusAS(garen, level) {
+  return garen.asPerLevel * levelGrowth(level);
 }
 
-// Calculate total AS by combining level-based and item AS
-function calculateTotalAS(levelBonusAS, itemASPercent) {
-  const totalBonusAS = levelBonusAS + itemASPercent;
-  return baseAS + (totalBonusAS / 100) * ASRatio;
+function calculateTotalAS(garen, totalBonusAS) {
+  return garen.baseAS + (totalBonusAS / 100) * garen.asRatio;
 }
 
-// Calculate spin count
-function calculateSpinCountFromAS(totalBonusAS) {
-  return Math.floor(7 + totalBonusAS / 25);
+// Only bonus attack speed from items and levels adds spins
+function calculateSpinCount(garen, totalBonusAS) {
+  const e = garen.judgment;
+  return e.baseSpins + Math.floor(totalBonusAS / e.bonusASPerSpin);
 }
 
-// Calculate damage per spin with level, item AD, crit, and armor
-function calculateDamagePerSpin(level, eRank, totalAD, critDamage, armor, lethality, pen) {
-  const rankDamage = [4, 8, 12, 16, 20];
-  const ADScaling = [0.36, 0.37, 0.38, 0.39, 0.4];
-  let levelBonusDamage = level <= 9 ? (level - 1) * 0.8 : 8 * 0.8 + (level - 9) * 0.2;
-
-  // Apply Percent Penetration first
-  const armorAfterPen = armor * (1 - pen / 100);
-
-  // Subtract Lethality
-  const finalArmor = Math.max(0, armorAfterPen - lethality);
-
-  // Damage reduction
-  const damageReduction = 100 / (100 + finalArmor);
-
-  // Base damage per spin
-  const baseDamagePerSpinRaw = rankDamage[eRank - 1] + levelBonusDamage + ADScaling[eRank - 1] * totalAD;
-  const baseDamagePerSpin = baseDamagePerSpinRaw * damageReduction;
-
-  // Critical damage per spin
-  const critMultiplier = critDamage / 100;
-  const dmgPerCritSpin = baseDamagePerSpinRaw * critMultiplier * damageReduction;
-
-  // Closest target bonus (25%)
-  const closestDmgPerSpin = baseDamagePerSpin * 1.25;
-  const closestDmgPerCritSpin = dmgPerCritSpin * 1.25;
-
-  return {
-    baseDamagePerSpin: baseDamagePerSpin.toFixed(2),
-    dmgPerCritSpin: dmgPerCritSpin.toFixed(2),
-    closestDmgPerSpin: closestDmgPerSpin.toFixed(2),
-    closestDmgPerCritSpin: closestDmgPerCritSpin.toFixed(2)
-  };
+// Judgment only gets a fraction of the bonus crit damage: 130% normally, 139% with Infinity Edge
+function calculateCritSpinMultiplier(garen, critDamage) {
+  return 1 + garen.judgment.critMod * (critDamage / 100 - 1);
 }
 
-// Function to calculate total E ability damage, factoring in crits and closest target bonus
-function calculateTotalEDamage(spins, baseDamagePerSpin, critChance, critDamage) {
-  // Calculate the expected number of crit spins based on critChance
-  const critSpins = Math.floor(spins * (critChance / 100));
-  const regularSpins = spins - critSpins;
+// Order of application: % armor reduction (multiplicative), % armor pen, then lethality
+function calculateEffectiveArmor(armor, reductions, pen, lethality) {
+  if (armor <= 0) return armor;
+  const reducedArmor = reductions.reduce((acc, r) => acc * (1 - r), armor);
+  const penetratedArmor = reducedArmor * (1 - pen / 100);
+  return Math.max(0, penetratedArmor - lethality);
+}
 
-  // Calculate damage for regular spins
-  const regularDamage = regularSpins * baseDamagePerSpin;
+function calculateDamageMultiplier(armor) {
+  return armor >= 0 ? 100 / (100 + armor) : 2 - 100 / (100 - armor);
+}
 
-  // Calculate damage for crit spins with crit multiplier
-  const critMultiplier = critDamage / 100;
-  const critDamageTotal = critSpins * baseDamagePerSpin * critMultiplier;
+// Armor reductions active when spin number `spin` (1-based) lands
+function getArmorReductions(garen, spin, { armorShred, targetIsChampion }) {
+  const reductions = [];
+  if (!targetIsChampion) return reductions;
 
-  // Total damage including regular and crit spins
-  const totalDamage = regularDamage + critDamageTotal;
+  if (armorShred) {
+    const stacks = Math.min(spin - 1, armorShred.maxStacks);
+    if (stacks > 0) reductions.push((stacks * armorShred.perStack) / 100);
+  }
 
-  // Calculate 25% bonus damage for the closest target
-  const closestTargetTotalDamage = totalDamage * 1.25;
+  if (spin > garen.judgment.hitsToShred) {
+    reductions.push(garen.judgment.shredAmount);
+  }
+  return reductions;
+}
+
+function calculateJudgment(garen, options) {
+  const { eRank, totalAD, spins, critChance, critDamage, armor, lethality, pen } = options;
+  const e = garen.judgment;
+
+  const rawDamagePerSpin = e.baseDamagePerSpin[eRank - 1] + e.adRatioPerSpin[eRank - 1] * totalAD;
+  const critMultiplier = calculateCritSpinMultiplier(garen, critDamage);
+  const expectedCritMultiplier = 1 + (critChance / 100) * (critMultiplier - 1);
+  const nearestMultiplier = 1 + e.nearestEnemyBonus;
+
+  const spinDamage = [];
+  for (let spin = 1; spin <= spins; spin++) {
+    const reductions = getArmorReductions(garen, spin, options);
+    const finalArmor = calculateEffectiveArmor(armor, reductions, pen, lethality);
+    spinDamage.push(rawDamagePerSpin * calculateDamageMultiplier(finalArmor));
+  }
+
+  const firstSpin = spinDamage[0];
+  const lastSpin = spinDamage[spinDamage.length - 1];
+  const totalDamage = spinDamage.reduce((sum, dmg) => sum + dmg, 0) * expectedCritMultiplier;
 
   return {
-      totalDamage: totalDamage.toFixed(2),
-      closestTargetTotalDamage: closestTargetTotalDamage.toFixed(2),
-      critSpins,
-      regularSpins
+    critMultiplier,
+    firstSpin,
+    firstCritSpin: firstSpin * critMultiplier,
+    lastSpin,
+    lastCritSpin: lastSpin * critMultiplier,
+    totalDamage,
+    nearest: {
+      firstSpin: firstSpin * nearestMultiplier,
+      firstCritSpin: firstSpin * critMultiplier * nearestMultiplier,
+      lastSpin: lastSpin * nearestMultiplier,
+      lastCritSpin: lastSpin * critMultiplier * nearestMultiplier,
+      totalDamage: totalDamage * nearestMultiplier,
+    },
   };
 }

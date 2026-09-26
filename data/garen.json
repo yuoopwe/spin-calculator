@@ -1,0 +1,32 @@
+{
+  "patch": "16.19.1",
+  "contentVersion": "16.19.8217343+branch.releases-16-19.content.release",
+  "baseAD": 69,
+  "adPerLevel": 4.5,
+  "baseAS": 0.625,
+  "asRatio": 0.625,
+  "asPerLevel": 3.65,
+  "critDamage": 200,
+  "judgment": {
+    "baseDamagePerSpin": [
+      4,
+      7,
+      10,
+      13,
+      16
+    ],
+    "adRatioPerSpin": [
+      0.4,
+      0.43,
+      0.46,
+      0.49,
+      0.52
+    ],
+    "baseSpins": 7,
+    "bonusASPerSpin": 25,
+    "nearestEnemyBonus": 0.25,
+    "critMod": 0.3,
+    "shredAmount": 0.25,
+    "hitsToShred": 6
+  }
+}

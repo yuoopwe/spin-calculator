@@ -47,21 +47,19 @@ function renderItems(items) {
     const itemElement = document.createElement("div");
     itemElement.classList.add("item-row");
 
-    // Create the image URL
-    const imageUrl = `https://wiki.leagueoflegends.com/en-us/images/${item.name.replace(/\s+/g, "_")}_item_HD.png`;
-
     itemElement.innerHTML = `
       <div class="item-image">
-        <img src="${imageUrl}" alt="${item.name}" onerror="this.onerror=null;this.src='https://wiki.leagueoflegends.com/en-us/images/${item.name.replace(/\s+/g, "_")}_item.png';">
+        <img src="${item.icon}" alt="${item.name}">
       </div>
       <div class="item-info">
-        <h4>${item.name}</h4>
+        <h4>${item.name} <span class="item-gold">${item.gold}g</span></h4>
         ${item.ad ? `<span class="item-stats"><img src="img/AD.png" alt="AD"> ${item.ad}</span>` : ""}
         ${item.as ? `<span class="item-stats"><img src="img/attack-speed.webp" alt="AS"> ${item.as}%</span>` : ""}
         ${item.critChance ? `<span class="item-stats"><img src="img/Critical_strike_icon.webp" alt="Crit Chance"> ${item.critChance}%</span>` : ""}
         ${item.critDamage ? `<span class="item-stats"><img src="img/crit-damage.png" alt="Crit Damage"> ${item.critDamage}%</span>` : ""}
         ${item.lethality ? `<span class="item-stats"><img src="img/armor_pen.png" alt="Lethality"> ${item.lethality}</span>` : ""}
         ${item.pen ? `<span class="item-stats"><img src="img/armor_pen.png" alt="%PEN"> ${item.pen}%</span>` : ""}
+        ${item.armorShred ? `<span class="item-stats"><img src="img/armor_pen.png" alt="Armor Shred"> ${item.armorShred.perStack}% x${item.armorShred.maxStacks} shred</span>` : ""}
       </div>
     `;
 
@@ -76,9 +74,12 @@ function renderItems(items) {
 
 function selectItem(item) {
   if (selectedSlotIndex !== null) {
-    // Check if the item being selected has Pen and another Pen item is already selected
-    if (item.pen && selectedItems.some(selectedItem => selectedItem?.pen)) {
-      alert("You can only have one item with Percent Armor Penetration.");
+    // Last Whisper and the items built from it share a unique passive
+    const hasOtherLastWhisper = selectedItems.some(
+      (selectedItem, index) => index !== selectedSlotIndex && selectedItem?.lastWhisper
+    );
+    if (item.lastWhisper && hasOtherLastWhisper) {
+      alert("You can only have one Last Whisper item (Last Whisper, Lord Dominik's Regards, Mortal Reminder, Serylda's Grudge).");
       return; // Prevent selection
     }
 
@@ -87,8 +88,7 @@ function selectItem(item) {
 
     // Update the slot with the item's image
     const itemSlot = document.querySelectorAll(".item")[selectedSlotIndex];
-    const imageUrl = `https://wiki.leagueoflegends.com/en-us/images/${item.name.replace(/\s+/g, "_")}_item_HD.png`;
-    itemSlot.innerHTML = `<img src="${imageUrl}" alt="${item.name}">`;
+    itemSlot.innerHTML = `<img src="${item.icon}" alt="${item.name}" title="${item.name}">`;
 
     closeModal(); // Close the modal after selecting an item
 
@@ -117,7 +117,7 @@ function removeItem() {
 // Initialize modal and set up event listeners
 async function initializeModal() {
   try {
-    const items = await fetchItems(); // Load items from items.json
+    const { items } = await gameData;
     renderItems(items); // Render items in modal initially
 
     // Set up search functionality

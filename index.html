@@ -34,6 +34,10 @@
         <img id="dummy" src="img/Enemy_Target_Dummy-f4ab72b7.png" />
         <input type="number" min="0" value="0" id="enemyArmor" />
         <p>Set the armor value to 0 to<br>calculate the raw damage of the spin</p>
+        <label class="checkbox">
+            <input type="checkbox" id="targetIsChampion" checked />
+            Target is a champion (apply armor shred)
+        </label>
     </div>
 
     <!-- RESULTS -->
@@ -51,11 +55,19 @@
                 </div>
             </h2>
         
-            <h2><span id="crit-spin-row"><img id="crit-spin" src="img/Critical_strike_icon.webp">&nbsp;spin:</span>
+            <h2><span id="crit-spin-row"><img id="crit-spin" src="img/Critical_strike_icon.webp">&nbsp;spin (<span id="critSpinMultiplier">130%</span>):</span>
                 <div>
                     <span id="dmgPerCritSpin">0</span>
                     /<img src="img/judgment.webp">
                     <span id="closestDmgPerCritSpin">0</span>
+                </div>
+            </h2>
+
+            <h2 id="shredded-spin-row" hidden>Final spin (shredded):
+                <div>
+                    <span id="dmgPerShreddedSpin">0</span>
+                    /<img src="img/judgment.webp">
+                    <span id="closestDmgPerShreddedSpin">0</span>
                 </div>
             </h2>
         
@@ -78,7 +90,7 @@
                 </div>
                 <div class="row">
                     <img src="img/Critical_strike_icon.webp" alt="Crit Strike Chance / Crit Strike Damage" />
-                    <h2 id="critValue">0% / 175%</h2>
+                    <h2 id="critValue">0% / 200%</h2>
                 </div>
                 <div class="row">
                     <img src="img/armor_pen.png" alt="Lethality / % Armor Penetration" />
@@ -86,7 +98,7 @@
                 </div>
             </div>
         </fieldset>
-        
+        <p id="patchInfo">Loading game data...</p>
     </div>
 
     <dialog id="itemModal">

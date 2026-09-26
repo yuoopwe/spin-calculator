@@ -1,0 +1,610 @@
+{
+  "patch": "16.19.1",
+  "items": [
+    {
+      "id": "1042",
+      "name": "Dagger",
+      "gold": 250,
+      "as": 10,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1042.png"
+    },
+    {
+      "id": "1036",
+      "name": "Long Sword",
+      "gold": 350,
+      "ad": 10,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1036.png"
+    },
+    {
+      "id": "1086",
+      "name": "Doran's Bow",
+      "gold": 400,
+      "ad": 8,
+      "as": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1086.png"
+    },
+    {
+      "id": "1083",
+      "name": "Cull",
+      "gold": 450,
+      "ad": 7,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1083.png"
+    },
+    {
+      "id": "1055",
+      "name": "Doran's Blade",
+      "gold": 450,
+      "ad": 10,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1055.png"
+    },
+    {
+      "id": "1018",
+      "name": "Cloak of Agility",
+      "gold": 600,
+      "critChance": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1018.png"
+    },
+    {
+      "id": "3144",
+      "name": "Scout's Slingshot",
+      "gold": 600,
+      "as": 20,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3144.png"
+    },
+    {
+      "id": "1043",
+      "name": "Recurve Bow",
+      "gold": 700,
+      "as": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1043.png"
+    },
+    {
+      "id": "6690",
+      "name": "Rectrix",
+      "gold": 775,
+      "ad": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6690.png"
+    },
+    {
+      "id": "3123",
+      "name": "Executioner's Calling",
+      "gold": 800,
+      "ad": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3123.png"
+    },
+    {
+      "id": "1037",
+      "name": "Pickaxe",
+      "gold": 875,
+      "ad": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1037.png"
+    },
+    {
+      "id": "1053",
+      "name": "Vampiric Scepter",
+      "gold": 900,
+      "ad": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1053.png"
+    },
+    {
+      "id": "3134",
+      "name": "Serrated Dirk",
+      "gold": 1000,
+      "ad": 20,
+      "lethality": 10,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3134.png"
+    },
+    {
+      "id": "3133",
+      "name": "Caulfield's Warhammer",
+      "gold": 1050,
+      "ad": 20,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3133.png"
+    },
+    {
+      "id": "3006",
+      "name": "Berserker's Greaves",
+      "gold": 1100,
+      "as": 30,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3006.png"
+    },
+    {
+      "id": "3172",
+      "name": "Gunmetal Greaves",
+      "gold": 1100,
+      "as": 45,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3172.png"
+    },
+    {
+      "id": "3044",
+      "name": "Phage",
+      "gold": 1100,
+      "ad": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3044.png"
+    },
+    {
+      "id": "2019",
+      "name": "Steel Sigil",
+      "gold": 1100,
+      "ad": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2019.png"
+    },
+    {
+      "id": "2021",
+      "name": "Tunneler",
+      "gold": 1150,
+      "ad": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2021.png"
+    },
+    {
+      "id": "3051",
+      "name": "Hearthbound Axe",
+      "gold": 1200,
+      "ad": 20,
+      "as": 20,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3051.png"
+    },
+    {
+      "id": "3077",
+      "name": "Tiamat",
+      "gold": 1200,
+      "ad": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3077.png"
+    },
+    {
+      "id": "3086",
+      "name": "Zeal",
+      "gold": 1200,
+      "as": 15,
+      "critChance": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3086.png"
+    },
+    {
+      "id": "1038",
+      "name": "B. F. Sword",
+      "gold": 1300,
+      "ad": 40,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1038.png"
+    },
+    {
+      "id": "3155",
+      "name": "Hexdrinker",
+      "gold": 1300,
+      "ad": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3155.png"
+    },
+    {
+      "id": "6670",
+      "name": "Noonquiver",
+      "gold": 1300,
+      "ad": 15,
+      "critChance": 20,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6670.png"
+    },
+    {
+      "id": "2020",
+      "name": "The Brutalizer",
+      "gold": 1337,
+      "ad": 25,
+      "lethality": 5,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2020.png"
+    },
+    {
+      "id": "3035",
+      "name": "Last Whisper",
+      "gold": 1450,
+      "ad": 20,
+      "pen": 18,
+      "lastWhisper": true,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3035.png"
+    },
+    {
+      "id": "6695",
+      "name": "Serpent's Fang",
+      "gold": 2500,
+      "ad": 55,
+      "lethality": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6695.png"
+    },
+    {
+      "id": "2512",
+      "name": "Fiendhunter Bolts",
+      "gold": 2650,
+      "as": 45,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2512.png"
+    },
+    {
+      "id": "6675",
+      "name": "Navori Flickerblade",
+      "gold": 2650,
+      "as": 40,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6675.png"
+    },
+    {
+      "id": "3046",
+      "name": "Phantom Dancer",
+      "gold": 2650,
+      "as": 65,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3046.png"
+    },
+    {
+      "id": "3094",
+      "name": "Rapid Firecannon",
+      "gold": 2650,
+      "as": 35,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3094.png"
+    },
+    {
+      "id": "3085",
+      "name": "Runaan's Hurricane",
+      "gold": 2650,
+      "as": 40,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3085.png"
+    },
+    {
+      "id": "6696",
+      "name": "Axiom Arc",
+      "gold": 2750,
+      "ad": 55,
+      "lethality": 18,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6696.png"
+    },
+    {
+      "id": "2523",
+      "name": "Hexoptics C44",
+      "gold": 2800,
+      "ad": 55,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2523.png"
+    },
+    {
+      "id": "6697",
+      "name": "Hubris",
+      "gold": 2800,
+      "ad": 55,
+      "lethality": 18,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6697.png"
+    },
+    {
+      "id": "3179",
+      "name": "Umbral Glaive",
+      "gold": 2800,
+      "ad": 60,
+      "lethality": 18,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3179.png"
+    },
+    {
+      "id": "3091",
+      "name": "Wit's End",
+      "gold": 2800,
+      "as": 50,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3091.png"
+    },
+    {
+      "id": "3142",
+      "name": "Youmuu's Ghostblade",
+      "gold": 2800,
+      "ad": 55,
+      "lethality": 18,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3142.png"
+    },
+    {
+      "id": "6698",
+      "name": "Profane Hydra",
+      "gold": 2850,
+      "ad": 55,
+      "lethality": 18,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6698.png"
+    },
+    {
+      "id": "6692",
+      "name": "Eclipse",
+      "gold": 2900,
+      "ad": 60,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6692.png"
+    },
+    {
+      "id": "3004",
+      "name": "Manamune",
+      "gold": 2900,
+      "ad": 35,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3004.png"
+    },
+    {
+      "id": "3115",
+      "name": "Nashor's Tooth",
+      "gold": 2900,
+      "as": 50,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3115.png"
+    },
+    {
+      "id": "2520",
+      "name": "Bastionbreaker",
+      "gold": 3000,
+      "ad": 55,
+      "lethality": 22,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2520.png"
+    },
+    {
+      "id": "3071",
+      "name": "Black Cleaver",
+      "gold": 3000,
+      "ad": 45,
+      "armorShred": {
+        "perStack": 6,
+        "maxStacks": 5
+      },
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3071.png"
+    },
+    {
+      "id": "6609",
+      "name": "Chempunk Chainsword",
+      "gold": 3000,
+      "ad": 45,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6609.png"
+    },
+    {
+      "id": "3814",
+      "name": "Edge of Night",
+      "gold": 3000,
+      "ad": 50,
+      "lethality": 15,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3814.png"
+    },
+    {
+      "id": "3073",
+      "name": "Experimental Hexplate",
+      "gold": 3000,
+      "ad": 40,
+      "as": 20,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3073.png"
+    },
+    {
+      "id": "3124",
+      "name": "Guinsoo's Rageblade",
+      "gold": 3000,
+      "ad": 30,
+      "as": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3124.png"
+    },
+    {
+      "id": "3146",
+      "name": "Hextech Gunblade",
+      "gold": 3000,
+      "ad": 40,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3146.png"
+    },
+    {
+      "id": "3181",
+      "name": "Hullbreaker",
+      "gold": 3000,
+      "ad": 40,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3181.png"
+    },
+    {
+      "id": "6673",
+      "name": "Immortal Shieldbow",
+      "gold": 3000,
+      "ad": 55,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6673.png"
+    },
+    {
+      "id": "6672",
+      "name": "Kraken Slayer",
+      "gold": 3000,
+      "ad": 45,
+      "as": 40,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6672.png"
+    },
+    {
+      "id": "3033",
+      "name": "Mortal Reminder",
+      "gold": 3000,
+      "ad": 35,
+      "pen": 30,
+      "critChance": 25,
+      "lastWhisper": true,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3033.png"
+    },
+    {
+      "id": "6694",
+      "name": "Serylda's Grudge",
+      "gold": 3000,
+      "ad": 45,
+      "pen": 35,
+      "lastWhisper": true,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6694.png"
+    },
+    {
+      "id": "3087",
+      "name": "Statikk Shiv",
+      "gold": 3000,
+      "ad": 45,
+      "as": 30,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3087.png"
+    },
+    {
+      "id": "3302",
+      "name": "Terminus",
+      "gold": 3000,
+      "ad": 30,
+      "as": 35,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3302.png"
+    },
+    {
+      "id": "6676",
+      "name": "The Collector",
+      "gold": 3000,
+      "ad": 50,
+      "lethality": 10,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6676.png"
+    },
+    {
+      "id": "6699",
+      "name": "Voltaic Cyclosword",
+      "gold": 3000,
+      "ad": 55,
+      "lethality": 10,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6699.png"
+    },
+    {
+      "id": "3032",
+      "name": "Yun Tal Wildarrows",
+      "gold": 3000,
+      "ad": 50,
+      "as": 45,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3032.png"
+    },
+    {
+      "id": "3508",
+      "name": "Essence Reaver",
+      "gold": 3050,
+      "ad": 50,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3508.png"
+    },
+    {
+      "id": "2510",
+      "name": "Dusk and Dawn",
+      "gold": 3100,
+      "as": 20,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2510.png"
+    },
+    {
+      "id": "2517",
+      "name": "Endless Hunger",
+      "gold": 3100,
+      "ad": 65,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2517.png"
+    },
+    {
+      "id": "3156",
+      "name": "Maw of Malmortius",
+      "gold": 3100,
+      "ad": 60,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3156.png"
+    },
+    {
+      "id": "3161",
+      "name": "Spear of Shojin",
+      "gold": 3100,
+      "ad": 45,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3161.png"
+    },
+    {
+      "id": "6610",
+      "name": "Sundered Sky",
+      "gold": 3100,
+      "ad": 40,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6610.png"
+    },
+    {
+      "id": "3153",
+      "name": "Blade of The Ruined King",
+      "gold": 3200,
+      "ad": 40,
+      "as": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3153.png"
+    },
+    {
+      "id": "3026",
+      "name": "Guardian Angel",
+      "gold": 3200,
+      "ad": 55,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3026.png"
+    },
+    {
+      "id": "3139",
+      "name": "Mercurial Scimitar",
+      "gold": 3200,
+      "ad": 50,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3139.png"
+    },
+    {
+      "id": "3095",
+      "name": "Stormrazor",
+      "gold": 3200,
+      "ad": 50,
+      "as": 25,
+      "critChance": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3095.png"
+    },
+    {
+      "id": "6333",
+      "name": "Death's Dance",
+      "gold": 3300,
+      "ad": 60,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6333.png"
+    },
+    {
+      "id": "3036",
+      "name": "Lord Dominik's Regards",
+      "gold": 3300,
+      "ad": 35,
+      "pen": 35,
+      "critChance": 25,
+      "lastWhisper": true,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3036.png"
+    },
+    {
+      "id": "2501",
+      "name": "Overlord's Bloodmail",
+      "gold": 3300,
+      "ad": 30,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/2501.png"
+    },
+    {
+      "id": "3074",
+      "name": "Ravenous Hydra",
+      "gold": 3300,
+      "ad": 65,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3074.png"
+    },
+    {
+      "id": "6631",
+      "name": "Stridebreaker",
+      "gold": 3300,
+      "ad": 40,
+      "as": 25,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/6631.png"
+    },
+    {
+      "id": "3748",
+      "name": "Titanic Hydra",
+      "gold": 3300,
+      "ad": 40,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3748.png"
+    },
+    {
+      "id": "3078",
+      "name": "Trinity Force",
+      "gold": 3333,
+      "ad": 36,
+      "as": 30,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3078.png"
+    },
+    {
+      "id": "3072",
+      "name": "Bloodthirster",
+      "gold": 3400,
+      "ad": 80,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3072.png"
+    },
+    {
+      "id": "3031",
+      "name": "Infinity Edge",
+      "gold": 3500,
+      "ad": 75,
+      "critChance": 25,
+      "critDamage": 30,
+      "icon": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3031.png"
+    }
+  ]
+}

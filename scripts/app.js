@@ -1,5 +1,7 @@
 // app.js
 
+let garenData = null;
+
 // Enforce limits on input values
 function enforceLimits() {
   const levelInput = document.getElementById("championLevel");
@@ -16,76 +18,86 @@ function getItemBonuses() {
         acc.ad += item.ad || 0;
         acc.as += item.as || 0;
         acc.critChance = Math.min(100, acc.critChance + (item.critChance || 0));
+        acc.critDamage += item.critDamage || 0;
         acc.lethality += item.lethality || 0;
         acc.pen += item.pen || 0;
-
-        // Set critDamage to 215% if Infinity Edge is found in selected items
-        if (item.name === "Infinity Edge") {
-          acc.critDamage = 215;
-        }
+        if (item.armorShred) acc.armorShred = item.armorShred;
       }
       return acc;
     },
-    { ad: 0, as: 0, critChance: 0, critDamage: 175, lethality: 0, pen: 0 } // Default critDamage is 175%
+    { ad: 0, as: 0, critChance: 0, critDamage: garenData.critDamage, lethality: 0, pen: 0, armorShred: null }
   );
 }
 
+function setText(id, value) {
+  document.getElementById(id).textContent = value;
+}
+
 function updateStats() {
+  if (!garenData) return;
   enforceLimits();
 
   const level = parseInt(document.getElementById("championLevel").value) || 1;
   const eRank = parseInt(document.getElementById("eRank").value) || 1;
   const armor = parseFloat(document.getElementById("enemyArmor").value) || 0;
+  const targetIsChampion = document.getElementById("targetIsChampion").checked;
 
-  // Calculate level-based stats
-  const levelBasedAD = calculateLevelBasedAD(level);
-  const ASResults = calculateLevelBasedAS(level);
+  const bonuses = getItemBonuses();
+  const totalAD = calculateLevelBasedAD(garenData, level) + bonuses.ad;
+  const totalBonusAS = calculateLevelBonusAS(garenData, level) + bonuses.as;
+  const totalAS = calculateTotalAS(garenData, totalBonusAS);
+  const spins = calculateSpinCount(garenData, totalBonusAS);
 
-  // Get item bonuses
-  const { ad: itemAD, as: itemASPercent, critChance, critDamage, lethality, pen } = getItemBonuses();
+  setText("adValue", totalAD.toFixed(2));
+  setText("asValue", `${totalAS.toFixed(3)} / ${totalBonusAS.toFixed(2)}%`);
+  setText("critValue", `${bonuses.critChance}% / ${bonuses.critDamage}%`);
+  setText("penValue", `${bonuses.lethality} / ${bonuses.pen}%`);
+  setText("spinCount", spins);
 
-  // Combine stats
-  const totalAD = calculateTotalAD(levelBasedAD, itemAD);
-  const totalAS = calculateTotalAS(ASResults.levelBonusAS, itemASPercent);
+  const result = calculateJudgment(garenData, {
+    eRank,
+    totalAD,
+    spins,
+    critChance: bonuses.critChance,
+    critDamage: bonuses.critDamage,
+    armor,
+    lethality: bonuses.lethality,
+    pen: bonuses.pen,
+    armorShred: bonuses.armorShred,
+    targetIsChampion,
+  });
 
-  // Display combined AD and AS
-  document.getElementById("adValue").textContent = totalAD.toFixed(2);
-  document.getElementById("asValue").textContent = `${totalAS.toFixed(3)} / ${(ASResults.levelBonusAS + itemASPercent).toFixed(2)}%`;
+  setText("dmgPerSpin", result.firstSpin.toFixed(2));
+  setText("closestDmgPerSpin", result.nearest.firstSpin.toFixed(2));
+  setText("critSpinMultiplier", `${Math.round(result.critMultiplier * 100)}%`);
+  setText("dmgPerCritSpin", result.firstCritSpin.toFixed(2));
+  setText("closestDmgPerCritSpin", result.nearest.firstCritSpin.toFixed(2));
 
-  // Display capped crit chance and adjusted crit damage
-  document.getElementById("critValue").textContent = `${critChance}% / ${critDamage}%`;
+  // Only worth showing when armor shred makes later spins hit harder
+  const shredRow = document.getElementById("shredded-spin-row");
+  shredRow.hidden = result.lastSpin.toFixed(2) === result.firstSpin.toFixed(2);
+  setText("dmgPerShreddedSpin", result.lastSpin.toFixed(2));
+  setText("closestDmgPerShreddedSpin", result.nearest.lastSpin.toFixed(2));
 
-  // Display Lethality and Percent Armor Penetration
-  document.getElementById("penValue").textContent = `${lethality} / ${pen}%`;
-
-  const spins = calculateSpinCountFromAS(ASResults.levelBonusAS + itemASPercent);
-  document.getElementById("spinCount").textContent = spins;
-
-  // Calculate E ability damage per spin with mitigation
-  const { baseDamagePerSpin, dmgPerCritSpin, closestDmgPerSpin, closestDmgPerCritSpin } = 
-      calculateDamagePerSpin(level, eRank, totalAD, critDamage, armor, lethality, pen);
-
-  // Update spin damage with mitigation
-  document.getElementById("dmgPerSpin").textContent = baseDamagePerSpin;
-  document.getElementById("closestDmgPerSpin").textContent = closestDmgPerSpin;
-
-  // Update critical spin damage with mitigation
-  document.getElementById("dmgPerCritSpin").textContent = dmgPerCritSpin;
-  document.getElementById("closestDmgPerCritSpin").textContent = closestDmgPerCritSpin;
-
-  // Calculate total E ability damage factoring in crits and closest target bonus
-  const { totalDamage, closestTargetTotalDamage } =
-      calculateTotalEDamage(spins, baseDamagePerSpin, critChance, critDamage);
-
-  // Update total damage
-  document.getElementById("totalEDmg").textContent = totalDamage;
-  document.getElementById("closestTotalEDmg").textContent = closestTargetTotalDamage;
+  setText("totalEDmg", result.totalDamage.toFixed(2));
+  setText("closestTotalEDmg", result.nearest.totalDamage.toFixed(2));
 }
 
 // Add event listeners for input changes
 document.getElementById("championLevel").addEventListener("input", updateStats);
 document.getElementById("eRank").addEventListener("input", updateStats);
 document.getElementById("enemyArmor").addEventListener("input", updateStats);
+document.getElementById("targetIsChampion").addEventListener("change", updateStats);
 
 // Initialize
-document.addEventListener("DOMContentLoaded", updateStats);
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const { garen } = await gameData;
+    garenData = garen;
+    setText("patchInfo", `Data: patch ${garen.patch}`);
+    updateStats();
+  } catch (error) {
+    console.error("Error loading game data:", error);
+    setText("patchInfo", "Could not load game data. Serve this folder over HTTP (see README).");
+  }
+});
